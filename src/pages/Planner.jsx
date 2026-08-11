@@ -28,14 +28,19 @@ const catColor = (id) => CATS.find((c) => c.id === id)?.color || 'bg-gray-200';
 
 export default function Planner() {
   const [tasks, setTasks] = useState([]);
+  const [shifts, setShifts] = useState([]);
   const [view, setView] = useState('daily');
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ title: '', time: '08:00', category: 'home' });
   const [weeklyGoals, setWeeklyGoals] = useLocalStorage('weekly-goals', ['', '', '']);
 
   const load = async () => {
-    const list = await base44.entities.Task.filter({ task_date: today() });
+    const [list, shiftList] = await Promise.all([
+      base44.entities.Task.filter({ task_date: today() }),
+      base44.entities.PartnerShift.filter({ shift_date: today() })
+    ]);
     setTasks(list);
+    setShifts(shiftList);
   };
   useEffect(() => {
     load();
@@ -78,6 +83,24 @@ export default function Planner() {
         </TabsList>
 
         <TabsContent value="daily" className="mt-4 space-y-1">
+          {shifts.length > 0 && (
+            <div className="mb-2 rounded-2xl bg-pink-100 dark:bg-pink-900/30 border border-pink-200 dark:border-pink-800 p-3">
+              <p className="text-xs font-medium text-pink-700 dark:text-pink-300 mb-1">Partner Shift Today</p>
+              {shifts.map((s) => (
+                <div key={s.id} className="flex items-center justify-between text-sm">
+                  <span className="font-medium">{s.label || 'Shift'}</span>
+                  <span className="text-pink-700 dark:text-pink-300">
+                    {s.start_time} – {s.end_time}
+                  </span>
+                </div>
+              ))}
+              {shifts.some((s) => s.notes) && (
+                <p className="text-xs text-pink-600 dark:text-pink-400 mt-1">
+                  {shifts.find((s) => s.notes)?.notes}
+                </p>
+              )}
+            </div>
+          )}
           {hours.map((h) => {
             const ts = tasksByHour(h);
             return (

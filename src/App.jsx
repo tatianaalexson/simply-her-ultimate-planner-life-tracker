@@ -28,6 +28,7 @@ import BudgetStudio from '@/pages/studios/BudgetStudio';
 import TTCStudio from '@/pages/studios/TTCStudio';
 import CreativeNook from '@/pages/studios/CreativeNook';
 import SettingsPage from '@/pages/Settings';
+import PartnerShifts from '@/pages/PartnerShifts';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -74,6 +75,7 @@ const AuthenticatedApp = () => {
           <Route path="/life/budget" element={<BudgetStudio />} />
           <Route path="/life/ttc" element={<TTCStudio />} />
           <Route path="/life/creative" element={<CreativeNook />} />
+          <Route path="/partner-shifts" element={<PartnerShifts />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>

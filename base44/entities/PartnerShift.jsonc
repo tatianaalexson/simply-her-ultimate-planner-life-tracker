@@ -1,0 +1,26 @@
+{
+  "name": "PartnerShift",
+  "type": "object",
+  "properties": {
+    "label": {
+      "type": "string",
+      "default": "Shift"
+    },
+    "shift_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "start_time": {
+      "type": "string"
+    },
+    "end_time": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "shift_date"
+  ]
+}

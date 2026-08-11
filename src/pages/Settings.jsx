@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppSettings } from '@/lib/AppSettings';
 import { THEMES } from '@/lib/themes';
 import { TRADITIONS } from '@/lib/faithData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -34,6 +36,7 @@ function Row({ label, desc, children }) {
 
 export default function SettingsPage() {
   const { settings, update } = useAppSettings();
+  const navigate = useNavigate();
   const tradition = TRADITIONS.find((t) => t.id === settings.tradition) || TRADITIONS[0];
 
   return (
@@ -154,6 +157,19 @@ export default function SettingsPage() {
           </Row>
           <Row label="TTC & Pathways Studio" desc="Donor, insemination, IVF">
             <Switch checked={settings.ttcEnabled} onCheckedChange={(v) => update('ttcEnabled', v)} />
+          </Row>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-3xl shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="font-heading text-base">Calendar & Partner Sync</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Row label="Partner Shift Schedule" desc="Log spouse work hours to overlay in Planner">
+            <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate('/partner-shifts')}>
+              Manage
+            </Button>
           </Row>
         </CardContent>
       </Card>
