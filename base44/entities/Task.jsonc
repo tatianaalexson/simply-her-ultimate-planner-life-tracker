@@ -1,0 +1,48 @@
+{
+  "name": "Task",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "home",
+        "reflection",
+        "wellness",
+        "errands",
+        "work",
+        "partner"
+      ],
+      "default": "home"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
+    },
+    "task_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "start_time": {
+      "type": "string"
+    },
+    "end_time": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "task_date"
+  ]
+}

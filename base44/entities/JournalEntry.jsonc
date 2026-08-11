@@ -1,0 +1,29 @@
+{
+  "name": "JournalEntry",
+  "type": "object",
+  "properties": {
+    "mood": {
+      "type": "string",
+      "enum": [
+        "peaceful",
+        "productive",
+        "grateful",
+        "restful"
+      ],
+      "default": "peaceful"
+    },
+    "content": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "entry_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "entry_date"
+  ]
+}

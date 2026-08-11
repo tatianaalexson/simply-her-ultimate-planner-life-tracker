@@ -1,0 +1,39 @@
+{
+  "name": "PrayerLog",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "prayer",
+        "intention",
+        "spread",
+        "gratitude",
+        "answered"
+      ],
+      "default": "prayer"
+    },
+    "title": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "answered"
+      ],
+      "default": "active"
+    },
+    "log_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "category",
+    "log_date"
+  ]
+}

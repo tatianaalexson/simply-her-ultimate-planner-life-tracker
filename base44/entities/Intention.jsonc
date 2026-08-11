@@ -1,0 +1,21 @@
+{
+  "name": "Intention",
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "string"
+    },
+    "intention_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "text",
+    "intention_date"
+  ]
+}
