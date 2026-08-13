@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Dumbbell } from 'lucide-react';
 import FitnessHabitsTab from '@/components/health/FitnessHabitsTab';
+import CalorieMacroTracker from '@/components/health/CalorieMacroTracker';
 import { LineChart, Line, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
 
 const FOCUS = {
@@ -101,6 +102,7 @@ export default function FitnessStudio() {
       </Card>
 
       <FitnessHabitsTab />
+      <CalorieMacroTracker />
     </StudioShell>
   );
 }
