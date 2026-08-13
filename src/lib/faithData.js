@@ -202,3 +202,88 @@ export const LITURGICAL = {
     { name: 'Gratitude Day', when: 'Any day', desc: 'A chosen day of thanks.' }
   ]
 };
+
+export const SCRIPTURES = {
+  christianity: [
+    '“For God so loved the world, that he gave his only Son.” — John 3:16',
+    '“I can do all things through Christ who strengthens me.” — Philippians 4:13',
+    '“The Lord is my shepherd; I shall not want.” — Psalm 23:1',
+    '“Love your neighbor as yourself.” — Mark 12:31',
+    '“Be still, and know that I am God.” — Psalm 46:10',
+    '“Cast all your anxiety on him because he cares for you.” — 1 Peter 5:7',
+    '“For I know the plans I have for you, declares the Lord.” — Jeremiah 29:11'
+  ],
+  islam: [
+    '“With every hardship comes ease.” — Qur’an 94:6',
+    '“Indeed, Allah is with the patient.” — Qur’an 2:153',
+    '“Whoever does a good deed, it is for their own soul.” — Qur’an 45:15',
+    '“And He found you lost and guided you.” — Qur’an 93:7',
+    '“My mercy embraces all things.” — Qur’an 7:156',
+    '“The best of people are those most beneficial to others.” — Hadith'
+  ],
+  judaism: [
+    '“The Lord bless you and keep you.” — Numbers 6:24',
+    '“Hear, O Israel: the Lord our God, the Lord is one.” — Deuteronomy 6:4',
+    '“Do justice, love mercy, and walk humbly with your God.” — Micah 6:8',
+    '“The Lord is my light and my salvation—whom shall I fear?” — Psalm 27:1',
+    '“Trust in the Lord with all your heart.” — Proverbs 3:5',
+    '“Peace be within your walls.” — Psalm 122:7'
+  ],
+  pagan: [
+    '“As above, so below. Tend to the cycles within you.”',
+    '“The moon waxes, the moon wanes — and so do we.”',
+    '“All acts of love and pleasure are my rituals.” — Charge of the Goddess',
+    '“Harm none, and do as you will.” — The Wiccan Rede',
+    '“Listen to the wisdom of the wind and the voice of the waters.”',
+    '“Every tree, every blade, holds a whisper of the divine.”'
+  ],
+  eastern: [
+    '“Peace comes from within. Do not seek it without.” — Buddha',
+    '“Holding on to anger is like grasping a hot coal.” — Buddha',
+    '“The mind is everything; what you think you become.” — Buddha',
+    '“Three things cannot be long hidden: the sun, the moon, and the truth.” — Buddha',
+    '“What you are is what you have been; what you will be is what you do now.”',
+    '“Walk as if your footsteps kiss the earth.” — Thich Nhat Hanh'
+  ],
+  universalist: [
+    '“Gratitude turns what we have into enough.”',
+    '“We are all threads in the same fabric of being.”',
+    '“Let gratitude be the pillow upon which you rest your soul.”',
+    '“In diversity there is beauty and strength.”',
+    '“Be the light you wish to see in the world.”',
+    '“Every dawn is a new chance to begin again.”'
+  ]
+};
+
+export const LEARN_MORE = {
+  christianity: [
+    { title: 'Christianity', snippet: 'Centered on the life and teachings of Jesus Christ.', url: 'https://en.wikipedia.org/wiki/Christianity' },
+    { title: 'The Bible', snippet: 'The sacred scriptures revered by Christians.', url: 'https://en.wikipedia.org/wiki/Bible' },
+    { title: 'Christian Denominations', snippet: 'Explore the many traditions within Christianity.', url: 'https://en.wikipedia.org/wiki/List_of_Christian_denominations' }
+  ],
+  islam: [
+    { title: 'Islam', snippet: 'A monotheistic faith revealed through the Prophet Muhammad.', url: 'https://en.wikipedia.org/wiki/Islam' },
+    { title: 'The Qur’an', snippet: 'The holy book of Islam.', url: 'https://en.wikipedia.org/wiki/Quran' },
+    { title: 'The Five Pillars', snippet: 'The core practices that shape Muslim life.', url: 'https://en.wikipedia.org/wiki/Five_Pillars_of_Islam' }
+  ],
+  judaism: [
+    { title: 'Judaism', snippet: 'The monotheistic religion of the Jewish people.', url: 'https://en.wikipedia.org/wiki/Judaism' },
+    { title: 'The Torah', snippet: 'The foundational text of Judaism.', url: 'https://en.wikipedia.org/wiki/Torah' },
+    { title: 'Jewish Holidays', snippet: 'The sacred cycle of the Jewish year.', url: 'https://en.wikipedia.org/wiki/Jewish_holidays' }
+  ],
+  pagan: [
+    { title: 'Modern Paganism', snippet: 'Contemporary earth-based spiritual movements.', url: 'https://en.wikipedia.org/wiki/Modern_Paganism' },
+    { title: 'Wheel of the Year', snippet: 'The cycle of seasonal festivals.', url: 'https://en.wikipedia.org/wiki/Wheel_of_the_Year' },
+    { title: 'Wicca', snippet: 'A modern pagan, nature-based religion.', url: 'https://en.wikipedia.org/wiki/Wicca' }
+  ],
+  eastern: [
+    { title: 'Buddhism', snippet: 'A path of practice and spiritual development.', url: 'https://en.wikipedia.org/wiki/Buddhism' },
+    { title: 'The Dhammapada', snippet: 'A collection of sayings of the Buddha.', url: 'https://en.wikipedia.org/wiki/Dhammapada' },
+    { title: 'Meditation', snippet: 'A core practice across Eastern traditions.', url: 'https://en.wikipedia.org/wiki/Meditation' }
+  ],
+  universalist: [
+    { title: 'Universalism', snippet: 'A tradition embracing diverse spiritual truths.', url: 'https://en.wikipedia.org/wiki/Universalism' },
+    { title: 'Gratitude', snippet: 'The practice of recognizing life’s gifts.', url: 'https://en.wikipedia.org/wiki/Gratitude' },
+    { title: 'Interfaith Dialogue', snippet: 'Cooperation and learning among faiths.', url: 'https://en.wikipedia.org/wiki/Interfaith_dialogue' }
+  ]
+};

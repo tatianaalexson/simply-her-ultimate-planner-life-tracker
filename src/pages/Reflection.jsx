@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAppSettings } from '@/lib/AppSettings';
 import { useLocalStorage } from '@/lib/useLocalStorage';
-import { TRADITIONS, WISDOM, STUDY_TEMPLATES, RECORD_TEMPLATES, EXAMEN_TEMPLATES, LITURGICAL } from '@/lib/faithData';
+import { TRADITIONS, STUDY_TEMPLATES, RECORD_TEMPLATES, EXAMEN_TEMPLATES, LITURGICAL, SCRIPTURES, LEARN_MORE } from '@/lib/faithData';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Bookmark, Plus, Check, Heart, X } from 'lucide-react';
+import { Bookmark, Plus, Check, Heart, X, ExternalLink } from 'lucide-react';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -31,6 +31,7 @@ export default function Reflection() {
   const [records, setRecords] = useLocalStorage(`records-${settings.tradition}-${settings.denomination}`, {});
   const [examen, setExamen] = useLocalStorage(`examen-${settings.tradition}`, {});
   const [trackedSeasons, setTrackedSeasons] = useLocalStorage(`seasons-${settings.tradition}`, []);
+  const [learnSlot, setLearnSlot] = useState(() => Math.floor(Date.now() / (30 * 60 * 1000)));
 
   const load = async () => {
     const [list, studies] = await Promise.all([
@@ -42,6 +43,13 @@ export default function Reflection() {
   };
   useEffect(() => {
     load();
+  }, []);
+  useEffect(() => {
+    const t = setInterval(
+      () => setLearnSlot(Math.floor(Date.now() / (30 * 60 * 1000))),
+      30 * 60 * 1000
+    );
+    return () => clearInterval(t);
   }, []);
 
   if (!settings.faithEnabled) {
@@ -57,10 +65,14 @@ export default function Reflection() {
 
   const tradition = TRADITIONS.find((t) => t.id === settings.tradition) || TRADITIONS[0];
   const template = STUDY_TEMPLATES[settings.tradition] || STUDY_TEMPLATES.universalist;
-  const wisdom = WISDOM[settings.tradition] || WISDOM.universalist;
   const recordTemplate = RECORD_TEMPLATES[settings.tradition] || RECORD_TEMPLATES.universalist;
   const examenPrompts = EXAMEN_TEMPLATES[settings.tradition] || EXAMEN_TEMPLATES.universalist;
   const liturgical = LITURGICAL[settings.tradition] || LITURGICAL.universalist;
+  const scriptures = SCRIPTURES[settings.tradition] || SCRIPTURES.universalist;
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  const scripture = scriptures[dayOfYear % scriptures.length];
+  const learnMoreArr = LEARN_MORE[settings.tradition] || LEARN_MORE.universalist;
+  const learnItem = learnMoreArr[learnSlot % learnMoreArr.length];
 
   const addPrayer = async () => {
     if (!form.title.trim()) return;
@@ -74,7 +86,7 @@ export default function Reflection() {
     load();
   };
   const bookmarkWisdom = () =>
-    setBookmarks((b) => (b.includes(wisdom) ? b : [wisdom, ...b]));
+    setBookmarks((b) => (b.includes(scripture) ? b : [scripture, ...b]));
   const saveStudy = async () => {
     const content = {};
     template.forEach((f) => { content[f.key] = study[f.key] || ''; });
@@ -144,17 +156,34 @@ export default function Reflection() {
           <TabsTrigger value="gratitude" className="rounded-full shrink-0 min-w-[68px] text-xs">Gratitude</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="wisdom" className="mt-4">
+        <TabsContent value="wisdom" className="mt-4 space-y-3">
           <Card className="rounded-3xl bg-gradient-to-br from-accent/60 to-secondary/40 border-none shadow-sm">
             <CardContent className="pt-6">
-              <p className="font-heading text-lg italic leading-relaxed">{wisdom}</p>
+              <p className="text-xs text-muted-foreground mb-1">Today's Scripture</p>
+              <p className="font-heading text-lg italic leading-relaxed">{scripture}</p>
               <Button variant="ghost" size="sm" onClick={bookmarkWisdom} className="mt-3 rounded-full">
                 <Bookmark className="w-4 h-4 mr-1" /> Bookmark
               </Button>
             </CardContent>
           </Card>
+          <Card className="rounded-3xl shadow-sm">
+            <CardContent className="pt-4">
+              <p className="text-xs text-muted-foreground mb-1">About {tradition.label}</p>
+              <p className="font-medium text-sm">{learnItem.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{learnItem.snippet}</p>
+              <a
+                href={learnItem.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-primary mt-2"
+              >
+                Learn more <ExternalLink className="w-3 h-3" />
+              </a>
+              <p className="text-[10px] text-muted-foreground mt-1">Refreshes every 30 minutes</p>
+            </CardContent>
+          </Card>
           {bookmarks.length > 0 && (
-            <div className="mt-3 space-y-2">
+            <div className="space-y-2">
               <p className="text-xs text-muted-foreground">Bookmarked</p>
               {bookmarks.map((b, i) => (
                 <p key={i} className="text-sm italic">
