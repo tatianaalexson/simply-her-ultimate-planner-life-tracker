@@ -171,6 +171,11 @@ export default function SettingsPage() {
               Manage
             </Button>
           </Row>
+          <Row label="Google Calendar" desc="Connect in Planner to sync your events both ways">
+            <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate('/planner')}>
+              Open
+            </Button>
+          </Row>
         </CardContent>
       </Card>
 
