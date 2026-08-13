@@ -163,17 +163,12 @@ export default function SettingsPage() {
 
       <Card className="rounded-3xl shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="font-heading text-base">Calendar & Partner Sync</CardTitle>
+          <CardTitle className="font-heading text-base">Partner Sync</CardTitle>
         </CardHeader>
         <CardContent>
           <Row label="Partner Shift Schedule" desc="Log spouse work hours to overlay in Planner">
             <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate('/partner-shifts')}>
               Manage
-            </Button>
-          </Row>
-          <Row label="Google Calendar" desc="Connect in Planner to sync your events both ways">
-            <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate('/planner')}>
-              Open
             </Button>
           </Row>
         </CardContent>

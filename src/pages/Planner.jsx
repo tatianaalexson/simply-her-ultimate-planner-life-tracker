@@ -11,10 +11,8 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { Plus, Check, X, CalendarPlus } from 'lucide-react';
+import { Plus, Check, X } from 'lucide-react';
 import { useLocalStorage } from '@/lib/useLocalStorage';
-import { useGoogleCalendar } from '@/hooks/useGoogleCalendar';
-import GoogleCalendarPanel from '@/components/planner/GoogleCalendarPanel';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -35,7 +33,6 @@ export default function Planner() {
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ title: '', time: '08:00', category: 'home' });
   const [weeklyGoals, setWeeklyGoals] = useLocalStorage('weekly-goals', ['', '', '']);
-  const gcal = useGoogleCalendar(today());
 
   const load = async () => {
     const [list, shiftList] = await Promise.all([
@@ -68,17 +65,6 @@ export default function Planner() {
   const remove = async (t) => {
     await base44.entities.Task.delete(t.id);
     load();
-  };
-  const pushToGoogle = async (t) => {
-    if (!t.start_time) return;
-    const [hh, mm] = t.start_time.split(':').map(Number);
-    const endIn = t.end_time || `${String((hh + 1) % 24).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-    const start = `${t.task_date}T${t.start_time}:00`;
-    const end = `${t.task_date}T${endIn}:00`;
-    try {
-      await gcal.pushEvent({ title: t.title, start, end });
-      gcal.refresh();
-    } catch {}
   };
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -115,14 +101,6 @@ export default function Planner() {
               )}
             </div>
           )}
-          <GoogleCalendarPanel
-            connected={gcal.connected}
-            events={gcal.events}
-            loading={gcal.loading}
-            onConnect={gcal.connect}
-            onDisconnect={gcal.disconnect}
-            onRefresh={gcal.refresh}
-          />
           {hours.map((h) => {
             const ts = tasksByHour(h);
             return (
@@ -147,11 +125,6 @@ export default function Planner() {
                       <button onClick={() => remove(t)}>
                         <X className="w-3 h-3 text-muted-foreground" />
                       </button>
-                      {gcal.connected && t.start_time && (
-                        <button onClick={() => pushToGoogle(t)} title="Add to Google Calendar">
-                          <CalendarPlus className="w-3 h-3 text-blue-500" />
-                        </button>
-                      )}
                     </div>
                   ))}
                 </div>
