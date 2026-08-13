@@ -16,6 +16,7 @@ const DEFAULTS = {
   healthPhysical: true,
   healthMedication: true,
   healthAppointments: true,
+  healthConditions: true,
   healthFitness: true,
   creatorEnabled: false,
   ttcEnabled: false,
