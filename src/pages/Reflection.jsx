@@ -15,7 +15,7 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Bookmark, Plus, Check, Heart } from 'lucide-react';
+import { Bookmark, Plus, Check, Heart, X } from 'lucide-react';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -26,10 +26,16 @@ export default function Reflection() {
   const [form, setForm] = useState({ category: 'prayer', title: '', notes: '' });
   const [study, setStudy] = useLocalStorage(`study-${settings.tradition}`, {});
   const [bookmarks, setBookmarks] = useLocalStorage('wisdom-bookmarks', []);
+  const [savedStudies, setSavedStudies] = useState([]);
+  const [openStudy, setOpenStudy] = useState(null);
 
   const load = async () => {
-    const list = await base44.entities.PrayerLog.filter({ log_date: today() });
+    const [list, studies] = await Promise.all([
+      base44.entities.PrayerLog.filter({ log_date: today() }),
+      base44.entities.StudyEntry.list('-entry_date')
+    ]);
     setPrayers(list);
+    setSavedStudies(studies);
   };
   useEffect(() => {
     load();
@@ -63,6 +69,22 @@ export default function Reflection() {
   };
   const bookmarkWisdom = () =>
     setBookmarks((b) => (b.includes(wisdom) ? b : [wisdom, ...b]));
+  const saveStudy = async () => {
+    const content = {};
+    template.forEach((f) => { content[f.key] = study[f.key] || ''; });
+    await base44.entities.StudyEntry.create({
+      title: study[template[0]?.key] || `${tradition.label} Study`,
+      tradition: tradition.id,
+      denomination: settings.denomination,
+      content,
+      entry_date: today()
+    });
+    load();
+  };
+  const deleteStudy = async (s) => {
+    await base44.entities.StudyEntry.delete(s.id);
+    load();
+  };
 
   return (
     <div className="py-4 space-y-4">
@@ -149,6 +171,47 @@ export default function Reflection() {
               />
             </div>
           ))}
+          <Button size="sm" onClick={saveStudy} className="rounded-full">
+            <Bookmark className="w-4 h-4 mr-1" /> Save Copy
+          </Button>
+          {savedStudies.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">Saved Studies</p>
+              {savedStudies.map((s) => (
+                <Card key={s.id} className="rounded-2xl shadow-sm">
+                  <CardContent className="pt-3">
+                    <div className="flex justify-between items-start">
+                      <button
+                        className="text-left flex-1"
+                        onClick={() => setOpenStudy((o) => (o === s.id ? null : s.id))}
+                      >
+                        <p className="font-medium text-sm">{s.title || `${s.tradition} Study`}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {s.entry_date} · {s.denomination || s.tradition}
+                        </p>
+                      </button>
+                      <Button size="sm" variant="ghost" onClick={() => deleteStudy(s)}>
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    {openStudy === s.id && (
+                      <div className="mt-2 space-y-1 border-t border-border/50 pt-2">
+                        {Object.entries(s.content || {}).map(([key, val]) => {
+                          const field = template.find((f) => f.key === key);
+                          return (
+                            <p key={key} className="text-xs">
+                              <span className="font-medium">{field?.label || key}: </span>
+                              {val || '—'}
+                            </p>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="prayer" className="mt-4 space-y-2">

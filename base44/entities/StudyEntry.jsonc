@@ -1,0 +1,27 @@
+{
+  "name": "StudyEntry",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "default": "Study"
+    },
+    "tradition": {
+      "type": "string"
+    },
+    "denomination": {
+      "type": "string"
+    },
+    "content": {
+      "type": "object",
+      "default": {}
+    },
+    "entry_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "entry_date"
+  ]
+}
