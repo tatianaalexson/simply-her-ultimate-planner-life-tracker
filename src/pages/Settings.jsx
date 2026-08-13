@@ -180,9 +180,6 @@ export default function SettingsPage() {
               <Row label="Appointment Hub" desc="Care team, pre-visit, follow-ups">
                 <Switch checked={settings.healthAppointments} onCheckedChange={(v) => update('healthAppointments', v)} />
               </Row>
-              <Row label="Fitness & Habits" desc="Steps, water, sleep, movement">
-                <Switch checked={settings.healthFitness} onCheckedChange={(v) => update('healthFitness', v)} />
-              </Row>
             </>
           )}
         </CardContent>

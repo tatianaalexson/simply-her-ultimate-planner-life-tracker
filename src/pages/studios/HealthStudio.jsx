@@ -5,7 +5,6 @@ import MentalHealthTab from '@/components/health/MentalHealthTab';
 import PhysicalHealthTab from '@/components/health/PhysicalHealthTab';
 import MedicationCabinetTab from '@/components/health/MedicationCabinetTab';
 import AppointmentHubTab from '@/components/health/AppointmentHubTab';
-import FitnessHabitsTab from '@/components/health/FitnessHabitsTab';
 import { HeartPulse } from 'lucide-react';
 
 export default function HealthStudio() {
@@ -14,8 +13,7 @@ export default function HealthStudio() {
     settings.healthMental && { value: 'mental', label: 'Mental' },
     settings.healthPhysical && { value: 'physical', label: 'Physical' },
     settings.healthMedication && { value: 'medication', label: 'Meds' },
-    settings.healthAppointments && { value: 'appointments', label: 'Visits' },
-    settings.healthFitness && { value: 'fitness', label: 'Fitness' }
+    settings.healthAppointments && { value: 'appointments', label: 'Visits' }
   ].filter(Boolean);
   const [tab, setTab] = useState(tabs[0]?.value || '');
 
@@ -47,7 +45,6 @@ export default function HealthStudio() {
         <TabsContent value="physical" className="mt-4"><PhysicalHealthTab /></TabsContent>
         <TabsContent value="medication" className="mt-4"><MedicationCabinetTab /></TabsContent>
         <TabsContent value="appointments" className="mt-4"><AppointmentHubTab /></TabsContent>
-        <TabsContent value="fitness" className="mt-4"><FitnessHabitsTab /></TabsContent>
       </Tabs>
     </div>
   );

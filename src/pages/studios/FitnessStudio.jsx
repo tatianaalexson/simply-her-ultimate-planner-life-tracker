@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Dumbbell } from 'lucide-react';
+import FitnessHabitsTab from '@/components/health/FitnessHabitsTab';
 import { LineChart, Line, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
 
 const FOCUS = {
@@ -98,6 +99,8 @@ export default function FitnessStudio() {
           </div>
         </CardContent>
       </Card>
+
+      <FitnessHabitsTab />
     </StudioShell>
   );
 }
