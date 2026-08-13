@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAppSettings } from '@/lib/AppSettings';
 import { useLocalStorage } from '@/lib/useLocalStorage';
-import { TRADITIONS, WISDOM, STUDY_TEMPLATES } from '@/lib/faithData';
+import { TRADITIONS, WISDOM, STUDY_TEMPLATES, RECORD_TEMPLATES, EXAMEN_TEMPLATES, LITURGICAL } from '@/lib/faithData';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,9 @@ export default function Reflection() {
   const [bookmarks, setBookmarks] = useLocalStorage('wisdom-bookmarks', []);
   const [savedStudies, setSavedStudies] = useState([]);
   const [openStudy, setOpenStudy] = useState(null);
+  const [records, setRecords] = useLocalStorage(`records-${settings.tradition}-${settings.denomination}`, {});
+  const [examen, setExamen] = useLocalStorage(`examen-${settings.tradition}`, {});
+  const [trackedSeasons, setTrackedSeasons] = useLocalStorage(`seasons-${settings.tradition}`, []);
 
   const load = async () => {
     const [list, studies] = await Promise.all([
@@ -55,6 +58,9 @@ export default function Reflection() {
   const tradition = TRADITIONS.find((t) => t.id === settings.tradition) || TRADITIONS[0];
   const template = STUDY_TEMPLATES[settings.tradition] || STUDY_TEMPLATES.universalist;
   const wisdom = WISDOM[settings.tradition] || WISDOM.universalist;
+  const recordTemplate = RECORD_TEMPLATES[settings.tradition] || RECORD_TEMPLATES.universalist;
+  const examenPrompts = EXAMEN_TEMPLATES[settings.tradition] || EXAMEN_TEMPLATES.universalist;
+  const liturgical = LITURGICAL[settings.tradition] || LITURGICAL.universalist;
 
   const addPrayer = async () => {
     if (!form.title.trim()) return;
@@ -128,11 +134,14 @@ export default function Reflection() {
       </Card>
 
       <Tabs defaultValue="wisdom">
-        <TabsList className="rounded-full w-full flex">
-          <TabsTrigger value="wisdom" className="rounded-full flex-1 text-xs">Daily Wisdom</TabsTrigger>
-          <TabsTrigger value="study" className="rounded-full flex-1 text-xs">Study</TabsTrigger>
-          <TabsTrigger value="prayer" className="rounded-full flex-1 text-xs">Prayer & Logs</TabsTrigger>
-          <TabsTrigger value="gratitude" className="rounded-full flex-1 text-xs">Gratitude</TabsTrigger>
+        <TabsList className="rounded-full w-full flex overflow-x-auto p-1">
+          <TabsTrigger value="wisdom" className="rounded-full shrink-0 min-w-[68px] text-xs">Wisdom</TabsTrigger>
+          <TabsTrigger value="study" className="rounded-full shrink-0 min-w-[68px] text-xs">Study</TabsTrigger>
+          <TabsTrigger value="records" className="rounded-full shrink-0 min-w-[68px] text-xs">Records</TabsTrigger>
+          <TabsTrigger value="prayer" className="rounded-full shrink-0 min-w-[68px] text-xs">Prayer Tracker</TabsTrigger>
+          <TabsTrigger value="examen" className="rounded-full shrink-0 min-w-[68px] text-xs">Examen</TabsTrigger>
+          <TabsTrigger value="seasons" className="rounded-full shrink-0 min-w-[68px] text-xs">Seasons</TabsTrigger>
+          <TabsTrigger value="gratitude" className="rounded-full shrink-0 min-w-[68px] text-xs">Gratitude</TabsTrigger>
         </TabsList>
 
         <TabsContent value="wisdom" className="mt-4">
@@ -212,6 +221,68 @@ export default function Reflection() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="records" className="mt-4 space-y-3">
+          <p className="text-sm text-muted-foreground">{tradition.label} · {settings.denomination}</p>
+          {recordTemplate.map((f) => (
+            <div key={f.key}>
+              <label className="text-xs font-medium">{f.label}</label>
+              <Input
+                value={records[f.key] || ''}
+                onChange={(e) => setRecords((r) => ({ ...r, [f.key]: e.target.value }))}
+                className="rounded-2xl mt-1"
+              />
+            </div>
+          ))}
+          <p className="text-[11px] text-muted-foreground">Saved automatically to this device for your tradition and denomination.</p>
+        </TabsContent>
+
+        <TabsContent value="examen" className="mt-4 space-y-3">
+          <p className="text-sm text-muted-foreground">{tradition.label} · Self-Reflection</p>
+          {examenPrompts.map((p, i) => (
+            <div key={i}>
+              <label className="text-xs font-medium">{p}</label>
+              <Textarea
+                value={examen[i] || ''}
+                onChange={(e) => setExamen((x) => ({ ...x, [i]: e.target.value }))}
+                rows={2}
+                placeholder="Reflect…"
+                className="rounded-2xl resize-none mt-1"
+              />
+            </div>
+          ))}
+        </TabsContent>
+
+        <TabsContent value="seasons" className="mt-4 space-y-2">
+          <p className="text-sm text-muted-foreground">{tradition.label} · Seasons & Holy Days</p>
+          {liturgical.map((item) => {
+            const id = `${settings.tradition}-${item.name}`;
+            const tracked = trackedSeasons.includes(id);
+            return (
+              <Card key={item.name} className="rounded-2xl shadow-sm">
+                <CardContent className="pt-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">{item.when}</p>
+                      {item.desc && <p className="text-xs mt-1">{item.desc}</p>}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={tracked ? 'default' : 'outline'}
+                      className="rounded-full shrink-0"
+                      onClick={() =>
+                        setTrackedSeasons((t) => (tracked ? t.filter((x) => x !== id) : [id, ...t]))
+                      }
+                    >
+                      {tracked ? 'Tracking' : 'Track'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </TabsContent>
 
         <TabsContent value="prayer" className="mt-4 space-y-2">
