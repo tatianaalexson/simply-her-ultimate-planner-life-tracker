@@ -6,7 +6,7 @@ import { Users } from 'lucide-react';
 
 const HOUR_H = 44;
 const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-const topFor = (t) => ((toMin(t) - 300) / 60) * HOUR_H;
+const topFor = (t) => (toMin(t) / 60) * HOUR_H;
 
 export default function DualScheduleView({ date }) {
   const [blocks] = useLocalStorage(blocksKey(date), []);

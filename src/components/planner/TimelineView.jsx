@@ -9,7 +9,7 @@ import { HOURS, fmtHour, dayKey, blocksKey, CATEGORIES, catMeta } from '@/lib/pl
 const HOUR_H = 56;
 const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
 const fromMin = (min) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
-const topFor = (t) => ((toMin(t) - 5 * 60) / 60) * HOUR_H;
+const topFor = (t) => (toMin(t) / 60) * HOUR_H;
 
 export default function TimelineView({ date }) {
   const [blocks, setBlocks] = useLocalStorage(blocksKey(date), []);
@@ -100,7 +100,7 @@ export default function TimelineView({ date }) {
         })}
 
         {/* current time line */}
-        {isToday && nowMin >= 5 * 60 && nowMin <= 23 * 60 && (
+        {isToday && nowMin >= 0 && nowMin <= 24 * 60 && (
           <div className="absolute left-10 right-0 z-10 flex items-center" style={{ top: topFor(fromMin(nowMin)) }}>
             <span className="w-2 h-2 rounded-full bg-destructive -ml-1" />
             <div className="flex-1 h-px bg-destructive" />

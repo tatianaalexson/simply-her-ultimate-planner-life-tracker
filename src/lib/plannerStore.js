@@ -10,11 +10,13 @@ export const CATEGORIES = [
 
 export const catMeta = (id) => CATEGORIES.find((c) => c.id === id) || CATEGORIES[0];
 
-// 05:00 through 23:00
-export const HOURS = Array.from({ length: 19 }, (_, i) => i + 5);
+// Full 24-hour day: 12am through 12am
+export const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 export const fmtHour = (h) => {
-  const ap = h >= 12 ? 'PM' : 'AM';
+  if (h === 0) return '12 AM';
+  if (h === 12) return '12 PM';
+  const ap = h > 12 ? 'PM' : 'AM';
   const hr = h > 12 ? h - 12 : h;
   return `${hr} ${ap}`;
 };
