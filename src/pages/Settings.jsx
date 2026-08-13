@@ -149,15 +149,42 @@ export default function SettingsPage() {
           <Row label="Budget & Finances" desc="Budget, bills, savings">
             <Switch checked={settings.budgetEnabled} onCheckedChange={(v) => update('budgetEnabled', v)} />
           </Row>
-          <Row label="Health & Vitals" desc="GLP-1, BP, medications">
-            <Switch checked={settings.healthEnabled} onCheckedChange={(v) => update('healthEnabled', v)} />
-          </Row>
           <Row label="Content Creator Studio" desc="Drops, workflow, brand deals">
             <Switch checked={settings.creatorEnabled} onCheckedChange={(v) => update('creatorEnabled', v)} />
           </Row>
           <Row label="TTC & Pathways Studio" desc="Donor, insemination, IVF">
             <Switch checked={settings.ttcEnabled} onCheckedChange={(v) => update('ttcEnabled', v)} />
           </Row>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-3xl shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="font-heading text-base">Health Studio Controls</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          <Row label="Health & Care Studio" desc="Show Health tab in navigation">
+            <Switch checked={settings.healthEnabled} onCheckedChange={(v) => update('healthEnabled', v)} />
+          </Row>
+          {settings.healthEnabled && (
+            <>
+              <Row label="Mental Health Studio" desc="Mood, wellness, grounding">
+                <Switch checked={settings.healthMental} onCheckedChange={(v) => update('healthMental', v)} />
+              </Row>
+              <Row label="Physical Health Studio" desc="Symptoms, vitals, injections">
+                <Switch checked={settings.healthPhysical} onCheckedChange={(v) => update('healthPhysical', v)} />
+              </Row>
+              <Row label="Medication Cabinet" desc="Meds, supplements, doses">
+                <Switch checked={settings.healthMedication} onCheckedChange={(v) => update('healthMedication', v)} />
+              </Row>
+              <Row label="Appointment Hub" desc="Care team, pre-visit, follow-ups">
+                <Switch checked={settings.healthAppointments} onCheckedChange={(v) => update('healthAppointments', v)} />
+              </Row>
+              <Row label="Fitness & Habits" desc="Steps, water, sleep, movement">
+                <Switch checked={settings.healthFitness} onCheckedChange={(v) => update('healthFitness', v)} />
+              </Row>
+            </>
+          )}
         </CardContent>
       </Card>
 

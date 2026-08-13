@@ -75,6 +75,7 @@ const AuthenticatedApp = () => {
           <Route path="/life/budget" element={<BudgetStudio />} />
           <Route path="/life/ttc" element={<TTCStudio />} />
           <Route path="/life/creative" element={<CreativeNook />} />
+          <Route path="/health" element={<HealthStudio />} />
           <Route path="/partner-shifts" element={<PartnerShifts />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>

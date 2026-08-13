@@ -1,18 +1,20 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Sun, CalendarHeart, Sparkles, LayoutGrid } from 'lucide-react';
-
-const tabs = [
-  { to: '/', label: 'Today', icon: Sun, end: true },
-  { to: '/planner', label: 'Planner', icon: CalendarHeart },
-  { to: '/reflection', label: 'Faith', icon: Sparkles },
-  { to: '/life', label: 'Life', icon: LayoutGrid }
-];
+import { Sun, CalendarHeart, Sparkles, LayoutGrid, HeartPulse } from 'lucide-react';
+import { useAppSettings } from '@/lib/AppSettings';
 
 export default function BottomNav() {
+  const { settings } = useAppSettings();
+  const tabs = [
+    { to: '/', label: 'Today', icon: Sun, end: true },
+    { to: '/planner', label: 'Planner', icon: CalendarHeart },
+    { to: '/reflection', label: 'Faith', icon: Sparkles },
+    ...(settings.healthEnabled ? [{ to: '/health', label: 'Health', icon: HeartPulse }] : []),
+    { to: '/life', label: 'Life', icon: LayoutGrid }
+  ];
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-card/80 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]">
-      <div className="max-w-2xl mx-auto grid grid-cols-4">
+      <div className={`max-w-2xl mx-auto grid ${settings.healthEnabled ? 'grid-cols-5' : 'grid-cols-4'}`}>
         {tabs.map((t) => (
           <NavLink
             key={t.to}

@@ -12,6 +12,11 @@ const DEFAULTS = {
   denomination: 'Nondenominational',
   budgetEnabled: false,
   healthEnabled: false,
+  healthMental: true,
+  healthPhysical: true,
+  healthMedication: true,
+  healthAppointments: true,
+  healthFitness: true,
   creatorEnabled: false,
   ttcEnabled: false,
   notifications: true
