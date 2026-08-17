@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAppSettings } from '@/lib/AppSettings';
-import { useLocalStorage } from '@/lib/useLocalStorage';
+import { useBudgetItems } from '@/hooks/useBudgetItems';
 import StudioShell from '@/components/StudioShell';
 import EmptyState from '@/components/EmptyState';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -10,16 +10,34 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Plus, Check, Trash2, Wallet, Receipt, PiggyBank, Repeat, Gift } from 'lucide-react';
 
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
 function OverviewTab() {
-  const [budget, setBudget] = useLocalStorage('budget-monthly', 0);
-  const [spent, setSpent] = useLocalStorage('budget-spent', 0);
+  const { items, add, update, loading } = useBudgetItems('limit');
+  const created = useRef(false);
+  useEffect(() => {
+    if (!loading && items.length === 0 && !created.current) {
+      created.current = true;
+      add({ name: 'Monthly Budget', amount: 0, spent: 0 });
+    }
+  }, [loading, items.length, add]);
+
+  const rec = items[0];
+  const budget = rec?.amount || 0;
+  const spent = rec?.spent || 0;
+
+  const setField = (field, val) => {
+    if (rec) update(rec.id, { [field]: val });
+    else add({ name: 'Monthly Budget', amount: field === 'amount' ? val : 0, spent: field === 'spent' ? val : 0 });
+  };
+
   return (
     <Card className="rounded-3xl shadow-sm">
       <CardHeader className="pb-2"><CardTitle className="font-heading text-base flex items-center gap-2"><Wallet className="w-4 h-4" /> Monthly Overview</CardTitle></CardHeader>
       <CardContent className="space-y-2">
         <div className="flex gap-2">
-          <div className="flex-1"><label className="text-xs">Budget</label><Input type="number" value={budget} onChange={(e) => setBudget(+e.target.value)} className="rounded-2xl" /></div>
-          <div className="flex-1"><label className="text-xs">Spent</label><Input type="number" value={spent} onChange={(e) => setSpent(+e.target.value)} className="rounded-2xl" /></div>
+          <div className="flex-1"><label className="text-xs">Budget</label><Input type="number" value={budget} onChange={(e) => setField('amount', +e.target.value)} className="rounded-2xl" /></div>
+          <div className="flex-1"><label className="text-xs">Spent</label><Input type="number" value={spent} onChange={(e) => setField('spent', +e.target.value)} className="rounded-2xl" /></div>
         </div>
         <Progress value={budget ? (spent / budget) * 100 : 0} />
         <p className="text-xs text-muted-foreground">${spent} of ${budget}</p>
@@ -29,9 +47,13 @@ function OverviewTab() {
 }
 
 function TransactionsTab() {
-  const [tx, setTx] = useLocalStorage('budget-transactions', []);
+  const { items: tx, add, remove } = useBudgetItems('transaction');
   const [form, setForm] = useState({ name: '', amount: '', cat: '' });
-  const add = () => { if (!form.name || !form.amount) return; setTx([{ id: Date.now(), ...form, amount: +form.amount, date: new Date().toLocaleDateString() }, ...tx]); setForm({ name: '', amount: '', cat: '' }); };
+  const addTx = () => {
+    if (!form.name || !form.amount) return;
+    add({ name: form.name, amount: +form.amount, category: form.cat, tx_date: todayISO() });
+    setForm({ name: '', amount: '', cat: '' });
+  };
   return (
     <Card className="rounded-3xl shadow-sm">
       <CardHeader className="pb-2"><CardTitle className="font-heading text-base">Transactions</CardTitle></CardHeader>
@@ -40,13 +62,13 @@ function TransactionsTab() {
         <div className="flex gap-2">
           <Input type="number" value={form.amount} onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))} placeholder="$" className="rounded-2xl" />
           <Input value={form.cat} onChange={(e) => setForm((p) => ({ ...p, cat: e.target.value }))} placeholder="Category" className="rounded-2xl" />
-          <Button size="icon" onClick={add} className="rounded-2xl shrink-0"><Plus className="w-4 h-4" /></Button>
+          <Button size="icon" onClick={addTx} className="rounded-2xl shrink-0"><Plus className="w-4 h-4" /></Button>
         </div>
         {tx.map((t) => (
           <div key={t.id} className="flex items-center gap-2 text-sm border-t border-border pt-2 first:border-0 first:pt-0">
-            <div className="flex-1 min-w-0"><p className="font-medium">{t.name}</p><p className="text-xs text-muted-foreground">{t.date} · {t.cat}</p></div>
+            <div className="flex-1 min-w-0"><p className="font-medium">{t.name}</p><p className="text-xs text-muted-foreground">{t.tx_date} · {t.category}</p></div>
             <span className="text-muted-foreground">${t.amount}</span>
-            <button onClick={() => setTx((x) => x.filter((y) => y.id !== t.id))} className="text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
+            <button onClick={() => remove(t.id)} className="text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
           </div>
         ))}
       </CardContent>
@@ -55,9 +77,9 @@ function TransactionsTab() {
 }
 
 function BillsTab() {
-  const [bills, setBills] = useLocalStorage('budget-bills', []);
+  const { items: bills, add, update, remove } = useBudgetItems('bill');
   const [bill, setBill] = useState({ name: '', amount: '' });
-  const add = () => { if (bill.name && bill.amount) { setBills([...bills, { id: Date.now(), ...bill, paid: false }]); setBill({ name: '', amount: '' }); } };
+  const addBill = () => { if (bill.name && bill.amount) { add({ name: bill.name, amount: +bill.amount, paid: false }); setBill({ name: '', amount: '' }); } };
   return (
     <Card className="rounded-3xl shadow-sm">
       <CardHeader className="pb-2"><CardTitle className="font-heading text-base flex items-center gap-2"><Receipt className="w-4 h-4" /> Bills</CardTitle></CardHeader>
@@ -65,14 +87,14 @@ function BillsTab() {
         <div className="flex gap-2">
           <Input value={bill.name} onChange={(e) => setBill((p) => ({ ...p, name: e.target.value }))} placeholder="Bill" className="rounded-2xl" />
           <Input value={bill.amount} onChange={(e) => setBill((p) => ({ ...p, amount: e.target.value }))} placeholder="$" className="rounded-2xl w-24" />
-          <Button size="sm" onClick={add} className="rounded-full shrink-0"><Plus className="w-4 h-4" /></Button>
+          <Button size="sm" onClick={addBill} className="rounded-full shrink-0"><Plus className="w-4 h-4" /></Button>
         </div>
         {bills.map((b) => (
           <div key={b.id} className="flex items-center gap-2 text-sm border-t border-border pt-2 first:border-0 first:pt-0">
-            <button onClick={() => setBills((bs) => bs.map((x) => (x.id === b.id ? { ...x, paid: !x.paid } : x)))} className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${b.paid ? 'bg-primary border-primary' : 'border-border'}`}>{b.paid && <Check className="w-2.5 h-2.5 text-primary-foreground" />}</button>
+            <button onClick={() => update(b.id, { paid: !b.paid })} className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${b.paid ? 'bg-primary border-primary' : 'border-border'}`}>{b.paid && <Check className="w-2.5 h-2.5 text-primary-foreground" />}</button>
             <span className={b.paid ? 'line-through text-muted-foreground flex-1' : 'flex-1'}>{b.name}</span>
             <span className="text-muted-foreground">${b.amount}</span>
-            <button onClick={() => setBills((x) => x.filter((y) => y.id !== b.id))} className="text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
+            <button onClick={() => remove(b.id)} className="text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
           </div>
         ))}
       </CardContent>
@@ -81,9 +103,10 @@ function BillsTab() {
 }
 
 function BudgetCatTab() {
-  const [cats, setCats] = useLocalStorage('budget-categories', []);
+  const { items: cats, add, update, remove } = useBudgetItems('category');
   const [form, setForm] = useState({ name: '', limit: '' });
-  const add = () => { if (!form.name) return; setCats([...cats, { id: Date.now(), name: form.name, limit: +form.limit || 0, spent: 0 }]); setForm({ name: '', limit: '' }); };
+  const [inc, setInc] = useState({});
+  const addCat = () => { if (!form.name) return; add({ name: form.name, limit: +form.limit || 0, spent: 0 }); setForm({ name: '', limit: '' }); };
   return (
     <Card className="rounded-3xl shadow-sm">
       <CardHeader className="pb-2"><CardTitle className="font-heading text-base">Budget Categories</CardTitle></CardHeader>
@@ -91,15 +114,16 @@ function BudgetCatTab() {
         <div className="flex gap-2">
           <Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Category" className="rounded-2xl" />
           <Input value={form.limit} onChange={(e) => setForm((p) => ({ ...p, limit: e.target.value }))} placeholder="Limit $" className="rounded-2xl w-24" />
-          <Button size="sm" onClick={add} className="rounded-full shrink-0"><Plus className="w-4 h-4" /></Button>
+          <Button size="sm" onClick={addCat} className="rounded-full shrink-0"><Plus className="w-4 h-4" /></Button>
         </div>
         {cats.map((c) => (
           <div key={c.id}>
             <div className="flex justify-between text-sm"><span>{c.name}</span><span className="text-muted-foreground">${c.spent}/${c.limit}</span></div>
             <Progress value={c.limit ? (c.spent / c.limit) * 100 : 0} className="mt-1" />
             <div className="flex gap-2 mt-1">
-              <Input type="number" placeholder="Add expense" onChange={(e) => setCats((cs) => cs.map((x) => (x.id === c.id ? { ...x, spent: x.spent + (+e.target.value || 0) } : x)))} className="rounded-2xl h-8" />
-              <button onClick={() => setCats((x) => x.filter((y) => y.id !== c.id))} className="text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
+              <Input type="number" value={inc[c.id] || ''} onChange={(e) => setInc((p) => ({ ...p, [c.id]: e.target.value }))} placeholder="Add expense" className="rounded-2xl h-8" />
+              <Button size="sm" variant="outline" onClick={() => { update(c.id, { spent: (c.spent || 0) + (+inc[c.id] || 0) }); setInc((p) => ({ ...p, [c.id]: '' })); }} className="rounded-2xl h-8 px-2">Add</Button>
+              <button onClick={() => remove(c.id)} className="text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
             </div>
           </div>
         ))}
@@ -109,9 +133,10 @@ function BudgetCatTab() {
 }
 
 function SavingsTab() {
-  const [goals, setGoals] = useLocalStorage('budget-goals', []);
+  const { items: goals, add, update } = useBudgetItems('savings');
   const [goal, setGoal] = useState({ name: '', target: '' });
-  const add = () => { if (goal.name && goal.target) { setGoals([...goals, { id: Date.now(), ...goal, saved: 0 }]); setGoal({ name: '', target: '' }); } };
+  const [inc, setInc] = useState({});
+  const addGoal = () => { if (goal.name && goal.target) { add({ name: goal.name, target: +goal.target, saved: 0 }); setGoal({ name: '', target: '' }); } };
   return (
     <Card className="rounded-3xl shadow-sm">
       <CardHeader className="pb-2"><CardTitle className="font-heading text-base flex items-center gap-2"><PiggyBank className="w-4 h-4" /> Savings Goals</CardTitle></CardHeader>
@@ -119,13 +144,16 @@ function SavingsTab() {
         <div className="flex gap-2">
           <Input value={goal.name} onChange={(e) => setGoal((p) => ({ ...p, name: e.target.value }))} placeholder="Goal" className="rounded-2xl" />
           <Input value={goal.target} onChange={(e) => setGoal((p) => ({ ...p, target: e.target.value }))} placeholder="$" className="rounded-2xl w-24" />
-          <Button size="sm" onClick={add} className="rounded-full shrink-0"><Plus className="w-4 h-4" /></Button>
+          <Button size="sm" onClick={addGoal} className="rounded-full shrink-0"><Plus className="w-4 h-4" /></Button>
         </div>
         {goals.map((g) => (
           <div key={g.id}>
             <div className="flex justify-between text-sm"><span>{g.name}</span><span className="text-muted-foreground">${g.saved}/${g.target}</span></div>
             <Progress value={g.target ? (g.saved / g.target) * 100 : 0} className="mt-1" />
-            <Input type="number" placeholder="Add savings" onChange={(e) => setGoals((gs) => gs.map((x) => (x.id === g.id ? { ...x, saved: x.saved + (+e.target.value || 0) } : x)))} className="rounded-2xl mt-1 h-8" />
+            <div className="flex gap-2 mt-1">
+              <Input type="number" value={inc[g.id] || ''} onChange={(e) => setInc((p) => ({ ...p, [g.id]: e.target.value }))} placeholder="Add savings" className="rounded-2xl h-8" />
+              <Button size="sm" variant="outline" onClick={() => { update(g.id, { saved: (g.saved || 0) + (+inc[g.id] || 0) }); setInc((p) => ({ ...p, [g.id]: '' })); }} className="rounded-2xl h-8 px-2">Add</Button>
+            </div>
           </div>
         ))}
       </CardContent>
@@ -134,9 +162,9 @@ function SavingsTab() {
 }
 
 function SubscriptionsTab() {
-  const [subs, setSubs] = useLocalStorage('budget-subscriptions', []);
+  const { items: subs, add, remove } = useBudgetItems('subscription');
   const [form, setForm] = useState({ name: '', amount: '', cycle: 'Monthly' });
-  const add = () => { if (!form.name) return; setSubs([{ id: Date.now(), ...form, amount: +form.amount || 0 }, ...subs]); setForm({ name: '', amount: '', cycle: 'Monthly' }); };
+  const addSub = () => { if (!form.name) return; add({ name: form.name, amount: +form.amount || 0, cycle: form.cycle }); setForm({ name: '', amount: '', cycle: 'Monthly' }); };
   const total = subs.reduce((s, x) => s + (+x.amount || 0), 0);
   return (
     <Card className="rounded-3xl shadow-sm">
@@ -148,12 +176,12 @@ function SubscriptionsTab() {
           <select value={form.cycle} onChange={(e) => setForm((p) => ({ ...p, cycle: e.target.value }))} className="rounded-2xl border bg-card px-3 text-sm">
             <option>Monthly</option><option>Yearly</option><option>Weekly</option>
           </select>
-          <Button size="icon" onClick={add} className="rounded-2xl shrink-0"><Plus className="w-4 h-4" /></Button>
+          <Button size="icon" onClick={addSub} className="rounded-2xl shrink-0"><Plus className="w-4 h-4" /></Button>
         </div>
         {subs.map((s) => (
           <div key={s.id} className="flex items-center gap-2 text-sm border-t border-border pt-2 first:border-0 first:pt-0">
             <span className="flex-1">{s.name}</span><span className="text-xs text-muted-foreground">{s.cycle}</span><span className="text-muted-foreground">${s.amount}</span>
-            <button onClick={() => setSubs((x) => x.filter((y) => y.id !== s.id))} className="text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
+            <button onClick={() => remove(s.id)} className="text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
           </div>
         ))}
         <p className="text-xs text-muted-foreground pt-1">Total: ${total}</p>
@@ -163,9 +191,9 @@ function SubscriptionsTab() {
 }
 
 function WishlistTab() {
-  const [items, setItems] = useLocalStorage('budget-wishlist', []);
+  const { items, add, remove } = useBudgetItems('wishlist');
   const [form, setForm] = useState({ name: '', price: '', priority: 'Want' });
-  const add = () => { if (!form.name) return; setItems([{ id: Date.now(), ...form }, ...items]); setForm({ name: '', price: '', priority: 'Want' }); };
+  const addItem = () => { if (!form.name) return; add({ name: form.name, price: +form.price || 0, priority: form.priority }); setForm({ name: '', price: '', priority: 'Want' }); };
   return (
     <Card className="rounded-3xl shadow-sm">
       <CardHeader className="pb-2"><CardTitle className="font-heading text-base flex items-center gap-2"><Gift className="w-4 h-4" /> Wishlist</CardTitle></CardHeader>
@@ -176,12 +204,12 @@ function WishlistTab() {
           <select value={form.priority} onChange={(e) => setForm((p) => ({ ...p, priority: e.target.value }))} className="rounded-2xl border bg-card px-3 text-sm">
             <option>Want</option><option>Need</option><option>Someday</option>
           </select>
-          <Button size="icon" onClick={add} className="rounded-2xl shrink-0"><Plus className="w-4 h-4" /></Button>
+          <Button size="icon" onClick={addItem} className="rounded-2xl shrink-0"><Plus className="w-4 h-4" /></Button>
         </div>
         {items.map((i) => (
           <div key={i.id} className="flex items-center gap-2 text-sm border-t border-border pt-2 first:border-0 first:pt-0">
-            <span className="flex-1">{i.name}</span><span className="text-xs px-2 py-0.5 rounded-full bg-accent">{i.priority}</span><span className="text-muted-foreground">{i.price && `$${i.price}`}</span>
-            <button onClick={() => setItems((x) => x.filter((y) => y.id !== i.id))} className="text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
+            <span className="flex-1">{i.name}</span><span className="text-xs px-2 py-0.5 rounded-full bg-accent">{i.priority}</span><span className="text-muted-foreground">{i.price ? `$${i.price}` : ''}</span>
+            <button onClick={() => remove(i.id)} className="text-muted-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
           </div>
         ))}
       </CardContent>

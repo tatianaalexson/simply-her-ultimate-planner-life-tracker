@@ -1,0 +1,67 @@
+{
+  "name": "BudgetItem",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "transaction",
+        "bill",
+        "category",
+        "savings",
+        "subscription",
+        "wishlist",
+        "limit"
+      ],
+      "default": "transaction"
+    },
+    "name": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "default": 0
+    },
+    "category": {
+      "type": "string"
+    },
+    "tx_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "paid": {
+      "type": "boolean",
+      "default": false
+    },
+    "limit": {
+      "type": "number",
+      "default": 0
+    },
+    "spent": {
+      "type": "number",
+      "default": 0
+    },
+    "saved": {
+      "type": "number",
+      "default": 0
+    },
+    "target": {
+      "type": "number",
+      "default": 0
+    },
+    "cycle": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number",
+      "default": 0
+    },
+    "priority": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "name"
+  ]
+}
