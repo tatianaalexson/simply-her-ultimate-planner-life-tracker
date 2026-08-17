@@ -3,7 +3,6 @@
 export const CATEGORIES = [
   { id: 'personal', label: 'Personal', h: 265, s: 60, l: 65 },
   { id: 'household', label: 'Household', h: 43, s: 74, l: 55 },
-  { id: 'partner', label: 'Partner Shift', h: 340, s: 75, l: 65 },
   { id: 'selfcare', label: 'Self-Care', h: 160, s: 60, l: 45 },
   { id: 'rest', label: 'Rest', h: 220, s: 30, l: 60 }
 ];

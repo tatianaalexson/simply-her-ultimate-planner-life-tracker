@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
 import { useAppSettings } from '@/lib/AppSettings';
 import AffirmationCard from '@/components/today/AffirmationCard';
 import WeatherPill from '@/components/today/WeatherPill';
@@ -8,6 +9,9 @@ import IntentionsCard from '@/components/today/IntentionsCard';
 import RoutinesAccordion from '@/components/today/RoutinesAccordion';
 import QuickTracker from '@/components/today/QuickTracker';
 import TodayScheduleCard from '@/components/today/TodayScheduleCard';
+import LifeSnapshot from '@/components/today/LifeSnapshot';
+import QuickAdd from '@/components/today/QuickAdd';
+import FocusBanner from '@/components/planner/FocusBanner';
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -16,8 +20,26 @@ const greeting = () => {
   return 'Good Evening, Sweetheart';
 };
 
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
 export default function Today() {
   const { visibleFeaturesFor } = useAppSettings();
+  const [tasks, setTasks] = useState([]);
+
+  const load = async () => {
+    try {
+      setTasks(await base44.entities.Task.filter({ task_date: todayISO() }, 'start_time'));
+    } catch {
+      setTasks([]);
+    }
+  };
+  useEffect(() => { load(); }, []);
+
+  const toggleTask = async (t) => {
+    setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, completed: !x.completed } : x)));
+    try { await base44.entities.Task.update(t.id, { completed: !t.completed }); } catch { load(); }
+  };
+
   const todayFeats = visibleFeaturesFor('today');
   const has = (id) => todayFeats.some((f) => f.id === id);
 
@@ -38,8 +60,10 @@ export default function Today() {
       </div>
 
       <AffirmationCard />
-      <TodayScheduleCard />
+      <FocusBanner key={`tf-${todayISO()}`} date={new Date()} />
+      <TodayScheduleCard tasks={tasks} onToggle={toggleTask} />
       <IntentionsCard />
+      <LifeSnapshot tasks={tasks} />
 
       {showRings && (
         <div className="rounded-3xl bg-card border p-4 shadow-sm">
@@ -58,6 +82,7 @@ export default function Today() {
       )}
 
       <JournalCard />
+      <QuickAdd />
     </div>
   );
 }
