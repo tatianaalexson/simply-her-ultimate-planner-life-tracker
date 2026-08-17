@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocalStorage } from '@/lib/useLocalStorage';
+import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { dayKey, blocksKey, tasksKey } from '@/lib/plannerStore';
+import { dayKey, blocksKey } from '@/lib/plannerStore';
 import { Target } from 'lucide-react';
+
+const isoOf = (d) => d.toISOString().slice(0, 10);
 
 export default function WeeklyOverview({ date, setDate }) {
   const [goals, setGoals] = useLocalStorage('planner-weekly-goals', ['', '', '']);
@@ -20,13 +23,18 @@ export default function WeeklyOverview({ date, setDate }) {
   });
 
   useEffect(() => {
-    const c = {};
-    days.forEach((dd) => {
-      const b = JSON.parse(localStorage.getItem(blocksKey(dd)) || '[]');
-      const t = JSON.parse(localStorage.getItem(tasksKey(dd)) || '[]');
-      c[dayKey(dd)] = { blocks: b.length, tasks: t.filter((x) => !x.done).length };
-    });
-    setCounts(c);
+    let on = true;
+    base44.entities.Task.list('-task_date', 200).then((all) => {
+      if (!on) return;
+      const c = {};
+      days.forEach((dd) => {
+        const b = JSON.parse(localStorage.getItem(blocksKey(dd)) || '[]');
+        const t = (all || []).filter((x) => x.task_date === isoOf(dd) && !x.completed);
+        c[dayKey(dd)] = { blocks: b.length, tasks: t.length };
+      });
+      setCounts(c);
+    }).catch(() => {});
+    return () => { on = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dayKey(date)]);
 

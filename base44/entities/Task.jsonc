@@ -39,6 +39,46 @@
     },
     "end_time": {
       "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "recurrence": {
+      "type": "string",
+      "enum": [
+        "none",
+        "daily",
+        "weekly",
+        "weekdays"
+      ],
+      "default": "none"
+    },
+    "recurring_parent": {
+      "type": "string"
+    },
+    "subtasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "done": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "default": []
     }
   },
   "required": [

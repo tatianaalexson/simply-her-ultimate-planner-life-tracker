@@ -12,6 +12,7 @@ import TodayScheduleCard from '@/components/today/TodayScheduleCard';
 import LifeSnapshot from '@/components/today/LifeSnapshot';
 import QuickAdd from '@/components/today/QuickAdd';
 import FocusBanner from '@/components/planner/FocusBanner';
+import { generateRecurringInstances } from '@/lib/recurringTasks';
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -28,6 +29,7 @@ export default function Today() {
 
   const load = async () => {
     try {
+      await generateRecurringInstances(todayISO());
       setTasks(await base44.entities.Task.filter({ task_date: todayISO() }, 'start_time'));
     } catch {
       setTasks([]);
