@@ -28,6 +28,7 @@ import BudgetStudio from '@/pages/studios/BudgetStudio';
 import TTCStudio from '@/pages/studios/TTCStudio';
 import CreativeNook from '@/pages/studios/CreativeNook';
 import SettingsPage from '@/pages/Settings';
+import SearchPage from '@/pages/Search';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -75,6 +76,7 @@ const AuthenticatedApp = () => {
           <Route path="/life/ttc" element={<TTCStudio />} />
           <Route path="/life/creative" element={<CreativeNook />} />
           <Route path="/health" element={<HealthStudio />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>

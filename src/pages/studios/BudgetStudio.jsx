@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppSettings } from '@/lib/AppSettings';
 import { useLocalStorage } from '@/lib/useLocalStorage';
 import StudioShell from '@/components/StudioShell';
+import EmptyState from '@/components/EmptyState';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -201,7 +202,7 @@ export default function BudgetStudio() {
   ].filter(Boolean);
   return (
     <StudioShell title="Budget & Finances">
-      {tabs.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">Enable a Budget feature in Settings to begin.</p> : (
+      {tabs.length === 0 ? <EmptyState title="Finances are tucked away" subtitle="Enable a Budget feature in Settings to begin." /> : (
         <Tabs defaultValue={tabs[0].value}>
           <TabsList className="flex w-full bg-accent rounded-full p-1 gap-1 mb-4 overflow-x-auto">
             {tabs.map((t) => <TabsTrigger key={t.value} value={t.value} className="rounded-full text-xs flex-1">{t.label}</TabsTrigger>)}
