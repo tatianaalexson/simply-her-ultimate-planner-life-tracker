@@ -6,6 +6,9 @@ import PhysicalHealthTab from '@/components/health/PhysicalHealthTab';
 import MedicationCabinetTab from '@/components/health/MedicationCabinetTab';
 import AppointmentHubTab from '@/components/health/AppointmentHubTab';
 import ChronicConditionsTab from '@/components/health/ChronicConditionsTab';
+import HistoryTab from '@/components/health/HistoryTab';
+import TestsTab from '@/components/health/TestsTab';
+import InsightsTab from '@/components/health/InsightsTab';
 import { HeartPulse } from 'lucide-react';
 
 export default function HealthStudio() {
@@ -15,7 +18,10 @@ export default function HealthStudio() {
     settings.healthPhysical && { value: 'physical', label: 'Physical' },
     settings.healthMedication && { value: 'medication', label: 'Meds' },
     settings.healthAppointments && { value: 'appointments', label: 'Visits' },
-    settings.healthConditions && { value: 'conditions', label: 'Conditions' }
+    settings.healthConditions && { value: 'conditions', label: 'Conditions' },
+    settings.healthHistory && { value: 'history', label: 'History' },
+    settings.healthTests && { value: 'tests', label: 'Tests' },
+    settings.healthInsights && { value: 'insights', label: 'Insights' }
   ].filter(Boolean);
   const [tab, setTab] = useState(tabs[0]?.value || '');
 
@@ -48,6 +54,9 @@ export default function HealthStudio() {
         <TabsContent value="medication" className="mt-4"><MedicationCabinetTab /></TabsContent>
         <TabsContent value="appointments" className="mt-4"><AppointmentHubTab /></TabsContent>
         <TabsContent value="conditions" className="mt-4"><ChronicConditionsTab /></TabsContent>
+        <TabsContent value="history" className="mt-4"><HistoryTab /></TabsContent>
+        <TabsContent value="tests" className="mt-4"><TestsTab /></TabsContent>
+        <TabsContent value="insights" className="mt-4"><InsightsTab /></TabsContent>
       </Tabs>
     </div>
   );

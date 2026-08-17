@@ -36,6 +36,9 @@ const DEFAULTS = {
   healthAppointments: true,
   healthConditions: true,
   healthFitness: true,
+  healthHistory: true,
+  healthTests: true,
+  healthInsights: true,
   // global
   notifications: true,
   // new foundation
