@@ -1,6 +1,8 @@
 import React from 'react';
 import { useAppSettings } from '@/lib/AppSettings';
 import { THEMES } from '@/lib/themes';
+import { FONT_PAIRINGS } from '@/lib/fonts';
+import { hexToHslChannels } from '@/lib/colorUtils';
 import { TRADITIONS } from '@/lib/faithData';
 import { FEATURE_GROUPS, featuresByGroup } from '@/lib/featureRegistry';
 import { LIFE_MODES } from '@/lib/lifeModes';
@@ -23,6 +25,16 @@ const FITNESS = [
 ];
 
 const SENSITIVE_GROUPS = ['health', 'ttc', 'faith', 'budget'];
+
+const ACCENTS = [
+  { id: 'rose', name: 'Rose', hex: '#e75d9b' },
+  { id: 'sage', name: 'Sage', hex: '#6f9c5e' },
+  { id: 'sky', name: 'Sky', hex: '#4aa3df' },
+  { id: 'lavender', name: 'Lavender', hex: '#a86cd9' },
+  { id: 'butter', name: 'Butter', hex: '#f2b84c' },
+  { id: 'mauve', name: 'Mauve', hex: '#b07ba8' },
+  { id: 'terra', name: 'Terracotta', hex: '#c97a5a' }
+];
 
 export default function SettingsPage() {
   const { settings, update, getVisibility, setVisibility } = useAppSettings();
@@ -117,6 +129,33 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between py-3 border-t border-border mt-2">
               <span className="text-sm font-medium">Dark Mode</span>
               <Switch checked={settings.darkMode} onCheckedChange={(v) => update('darkMode', v)} />
+            </div>
+          </SettingsSection>
+
+          <SettingsSection title="Font Pairing" description="Choose the editorial voice for headings and body text.">
+            <div className="grid grid-cols-2 gap-2">
+              {FONT_PAIRINGS.map((f) => (
+                <button key={f.id} onClick={() => update('fontPairing', f.id)} className={`rounded-2xl p-3 border-2 text-left transition ${settings.fontPairing === f.id ? 'border-primary' : 'border-border'}`}>
+                  <p className="text-xl leading-none" style={{ fontFamily: f.heading }}>Aa</p>
+                  <span className="text-xs font-medium block mt-1.5">{f.name}</span>
+                </button>
+              ))}
+            </div>
+          </SettingsSection>
+
+          <SettingsSection title="Accent Override" description="Tint buttons and highlights across any theme. Clear to use the theme's own accent.">
+            <div className="flex flex-wrap items-center gap-2">
+              {ACCENTS.map((a) => (
+                <button key={a.id} onClick={() => update('accentOverride', settings.accentOverride === a.hex ? '' : a.hex)} className={`w-9 h-9 rounded-full border-2 transition ${settings.accentOverride === a.hex ? 'border-foreground' : 'border-transparent'}`} style={{ background: a.hex }} title={a.name} />
+              ))}
+              {settings.accentOverride && (
+                <button onClick={() => update('accentOverride', '')} className="text-xs px-3 h-9 rounded-full border border-border">Reset</button>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <label className="text-xs text-muted-foreground">Custom</label>
+              <input type="color" value={settings.accentOverride || '#e75d9b'} onChange={(e) => update('accentOverride', e.target.value)} className="w-9 h-9 rounded-full border border-border bg-transparent cursor-pointer p-0" />
+              <span className="text-xs text-muted-foreground">Tap to pick your own</span>
             </div>
           </SettingsSection>
         </TabsContent>

@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { THEMES } from '@/lib/themes';
+import { applyFontPairing } from '@/lib/fonts';
+import { hexToHslChannels, foregroundForChannels } from '@/lib/colorUtils';
 import {
   FEATURE_GROUPS,
   FEATURES,
@@ -44,7 +46,9 @@ const DEFAULTS = {
   // new foundation
   lifeModes: [],
   customModes: [],
-  featureVisibility: {}
+  featureVisibility: {},
+  fontPairing: 'lora',
+  accentOverride: ''
 };
 
 const AppSettingsContext = createContext(null);
@@ -67,6 +71,15 @@ export function AppSettingsProvider({ children }) {
     Object.entries(palette).forEach(([k, val]) => {
       root.style.setProperty(`--${k}`, val);
     });
+    applyFontPairing(settings.fontPairing);
+    if (settings.accentOverride) {
+      const channels = hexToHslChannels(settings.accentOverride);
+      if (channels) {
+        root.style.setProperty('--primary', channels);
+        root.style.setProperty('--ring', channels);
+        root.style.setProperty('--primary-foreground', foregroundForChannels(channels));
+      }
+    }
   }, [settings]);
 
   const update = (key, value) => setSettings((s) => ({ ...s, [key]: value }));
