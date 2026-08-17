@@ -2,7 +2,6 @@ import React from 'react';
 import { useAppSettings } from '@/lib/AppSettings';
 import { THEMES } from '@/lib/themes';
 import { FONT_PAIRINGS } from '@/lib/fonts';
-import { hexToHslChannels } from '@/lib/colorUtils';
 import { TRADITIONS } from '@/lib/faithData';
 import { FEATURE_GROUPS, featuresByGroup } from '@/lib/featureRegistry';
 import { LIFE_MODES } from '@/lib/lifeModes';

@@ -1,20 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocalStorage } from '@/lib/useLocalStorage';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Clock, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Clock, AlertTriangle, Move } from 'lucide-react';
 import { HOURS, fmtHour, dayKey, blocksKey, CATEGORIES, catMeta } from '@/lib/plannerStore';
 
 const HOUR_H = 56;
 const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
 const fromMin = (min) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 const topFor = (t) => (toMin(t) / 60) * HOUR_H;
+const snap = (min) => Math.round(min / 15) * 15;
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 export default function TimelineView({ date }) {
   const [blocks, setBlocks] = useLocalStorage(blocksKey(date), []);
   const [now, setNow] = useState(new Date());
-  const [form, setForm] = useState({ open: false, id: null, title: '', category: 'personal', start: '09:00', end: '10:00' });
+  const [form, setForm] = useState({ open: false, id: null, title: '', category: 'personal', start: '09:00', end: '10:00', allDay: false });
+  const [drag, setDrag] = useState(null); // { id, durMin }
+  const [drop, setDrop] = useState(null); // { top, min }
+  const tlRef = useRef(null);
 
   useEffect(() => {
     const i = setInterval(() => setNow(new Date()), 60000);
@@ -31,19 +37,46 @@ export default function TimelineView({ date }) {
     return blocks.some((b) => b.id !== id && overlaps(b, me));
   };
 
-  const openAdd = (start = '09:00') => setForm({ open: true, id: null, title: '', category: 'personal', start, end: fromMin(toMin(start) + 60) });
-  const openEdit = (b) => setForm({ open: true, id: b.id, title: b.title, category: b.category, start: b.start, end: b.end });
+  const openAdd = (start = '09:00') => setForm({ open: true, id: null, title: '', category: 'personal', start, end: fromMin(toMin(start) + 60), allDay: false });
+  const openEdit = (b) => setForm({ open: true, id: b.id, title: b.title, category: b.category, start: b.start, end: b.end, allDay: !!b.allDay });
 
   const save = () => {
     if (!form.title.trim()) return;
+    const payload = form.allDay
+      ? { title: form.title.trim(), category: form.category, start: '00:00', end: '23:59', allDay: true }
+      : { title: form.title.trim(), category: form.category, start: form.start, end: form.end, allDay: false };
     if (form.id) {
-      setBlocks((bs) => bs.map((b) => (b.id === form.id ? { ...b, title: form.title, category: form.category, start: form.start, end: form.end } : b)));
+      setBlocks((bs) => bs.map((b) => (b.id === form.id ? { ...b, ...payload } : b)));
     } else {
-      setBlocks((bs) => [...bs, { id: Date.now(), title: form.title.trim(), category: form.category, start: form.start, end: form.end }]);
+      setBlocks((bs) => [...bs, { id: Date.now(), ...payload }]);
     }
     setForm((f) => ({ ...f, open: false }));
   };
   const del = (id) => setBlocks((bs) => bs.filter((b) => b.id !== id));
+
+  const onDragStart = (e, b) => {
+    setDrag({ id: b.id, durMin: toMin(b.end) - toMin(b.start) });
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', String(b.id)); } catch {}
+  };
+  const onDragOver = (e) => {
+    if (!drag) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const rect = tlRef.current.getBoundingClientRect();
+    const min = snap(clamp((e.clientY - rect.top) / HOUR_H * 60, 0, 24 * 60 - drag.durMin));
+    setDrop({ top: (min / 60) * HOUR_H, min });
+  };
+  const onDrop = (e) => {
+    e.preventDefault();
+    if (drag && drop) {
+      const ns = fromMin(drop.min);
+      const ne = fromMin(drop.min + drag.durMin);
+      setBlocks((bs) => bs.map((x) => (x.id === drag.id ? { ...x, start: ns, end: ne } : x)));
+    }
+    setDrag(null);
+    setDrop(null);
+  };
 
   return (
     <div className="rounded-3xl border bg-card p-3 shadow-sm">
@@ -51,14 +84,30 @@ export default function TimelineView({ date }) {
         <h3 className="font-heading text-base flex items-center gap-1.5"><Clock className="w-4 h-4" /> Time-Blocked Timeline</h3>
         <Button size="sm" className="rounded-full" onClick={() => openAdd()}><Plus className="w-4 h-4 mr-1" /> Block</Button>
       </div>
+      <p className="text-[10px] text-muted-foreground mb-2 flex items-center gap-1"><Move className="w-3 h-3" /> Drag a block up or down to reschedule — it snaps to 15-minute marks.</p>
 
-      <div className="relative" style={{ height: HOURS.length * HOUR_H }}>
+      <div
+        ref={tlRef}
+        className="relative"
+        style={{ height: HOURS.length * HOUR_H }}
+        onDragOver={onDragOver}
+        onDragLeave={() => setDrop(null)}
+        onDrop={onDrop}
+      >
         {HOURS.map((h, i) => (
           <div key={h} className="absolute left-0 right-0 flex" style={{ top: i * HOUR_H, height: HOUR_H }}>
             <span className="w-12 shrink-0 text-[10px] text-muted-foreground pt-1">{fmtHour(h)}</span>
             <div className="flex-1 border-t border-border/50 cursor-pointer hover:bg-accent/30" onClick={() => openAdd(fromMin(h * 60))} />
           </div>
         ))}
+
+        {/* drop preview */}
+        {drag && drop && (
+          <div
+            className="absolute left-12 right-2 rounded-2xl border-2 border-dashed border-primary/60 bg-primary/10 pointer-events-none"
+            style={{ top: drop.top + 2, height: Math.max(24, (drag.durMin / 60) * HOUR_H - 4) }}
+          />
+        )}
 
         {/* buffer indicators */}
         {sorted.map((b, i) => {
@@ -69,7 +118,7 @@ export default function TimelineView({ date }) {
           return (
             <div
               key={`buf-${b.id}`}
-              className="absolute left-12 right-2 text-[9px] text-muted-foreground/70 flex items-center"
+              className="absolute left-12 right-2 text-[9px] text-muted-foreground/70 flex items-center pointer-events-none"
               style={{ top: topFor(b.end) + 2, height: Math.min((gap / 60) * HOUR_H, 16) }}
             >
               <span className="truncate">· buffer {gap}m</span>
@@ -79,22 +128,25 @@ export default function TimelineView({ date }) {
 
         {/* blocks */}
         {sorted.map((b) => {
-          const top = topFor(b.start);
-          const h = Math.max(24, ((toMin(b.end) - toMin(b.start)) / 60) * HOUR_H - 4);
           const m = catMeta(b.category);
           const ov = blockOverlaps(b.id);
+          const allDay = b.allDay || (b.start === '00:00' && b.end === '23:59');
+          const top = allDay ? 0 : topFor(b.start);
+          const h = allDay ? HOURS.length * HOUR_H - 4 : Math.max(24, ((toMin(b.end) - toMin(b.start)) / 60) * HOUR_H - 4);
           return (
             <div
               key={b.id}
+              draggable={!allDay}
+              onDragStart={(e) => onDragStart(e, b)}
               onClick={() => openEdit(b)}
-              className="absolute left-12 right-2 rounded-2xl px-3 py-1.5 shadow-sm cursor-pointer overflow-hidden"
+              className={`absolute left-12 right-2 rounded-2xl px-3 py-1.5 shadow-sm overflow-hidden ${allDay ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'}`}
               style={{ top: top + 2, height: h, background: `hsla(${m.h}, ${m.s}%, ${m.l}%, 0.18)`, borderLeft: `3px solid hsl(${m.h}, ${m.s}%, ${m.l}%)` }}
             >
               <div className="flex items-center justify-between gap-1">
                 <p className="text-xs font-medium truncate">{b.title}</p>
                 {ov && <AlertTriangle className="w-3 h-3 text-destructive shrink-0" />}
               </div>
-              <p className="text-[10px] text-muted-foreground">{b.start}–{b.end} · {m.label}</p>
+              <p className="text-[10px] text-muted-foreground">{allDay ? 'All day' : `${b.start}–${b.end}`} · {m.label}</p>
             </div>
           );
         })}
@@ -113,16 +165,22 @@ export default function TimelineView({ date }) {
           <div className="bg-card w-full rounded-t-3xl p-4 space-y-3 shadow-lg" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-heading text-base">{form.id ? 'Edit Block' : 'New Block'}</h3>
             <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Block title" className="rounded-2xl" />
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-xs text-muted-foreground">Start</label>
-                <Input type="time" value={form.start} onChange={(e) => setForm((f) => ({ ...f, start: e.target.value }))} className="rounded-2xl" />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground">End</label>
-                <Input type="time" value={form.end} onChange={(e) => setForm((f) => ({ ...f, end: e.target.value }))} className="rounded-2xl" />
-              </div>
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm font-medium">All-day</span>
+              <Switch checked={form.allDay} onCheckedChange={(v) => setForm((f) => ({ ...f, allDay: v }))} />
             </div>
+            {!form.allDay && (
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-muted-foreground">Start</label>
+                  <Input type="time" value={form.start} onChange={(e) => setForm((f) => ({ ...f, start: e.target.value }))} className="rounded-2xl" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">End</label>
+                  <Input type="time" value={form.end} onChange={(e) => setForm((f) => ({ ...f, end: e.target.value }))} className="rounded-2xl" />
+                </div>
+              </div>
+            )}
             <div>
               <label className="text-xs text-muted-foreground">Category</label>
               <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}>
