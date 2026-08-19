@@ -8,13 +8,14 @@ export default function BottomNav() {
   const tabs = [
     { to: '/', label: 'Today', icon: Sun, end: true },
     { to: '/planner', label: 'Planner', icon: CalendarHeart },
-    { to: '/reflection', label: 'Faith', icon: Sparkles },
+    ...(settings.faithEnabled ? [{ to: '/reflection', label: 'Faith', icon: Sparkles }] : []),
     ...(settings.healthEnabled ? [{ to: '/health', label: 'Health', icon: HeartPulse }] : []),
     { to: '/life', label: 'Life', icon: LayoutGrid }
   ];
+  const colClass = { 3: 'grid-cols-3', 4: 'grid-cols-4', 5: 'grid-cols-5' }[tabs.length] || 'grid-cols-4';
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-card/80 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]">
-      <div className={`max-w-2xl mx-auto grid ${settings.healthEnabled ? 'grid-cols-5' : 'grid-cols-4'}`}>
+      <div className={`max-w-2xl mx-auto grid ${colClass}`}>
         {tabs.map((t) => (
           <NavLink
             key={t.to}

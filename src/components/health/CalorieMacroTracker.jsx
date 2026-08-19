@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocalStorage } from '@/lib/useLocalStorage';
+import { useEntityList } from '@/hooks/useEntityList';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,11 +17,9 @@ const MACROS = [
 
 export default function CalorieMacroTracker() {
   const [goals, setGoals] = useLocalStorage('fitness-macro-goals', { calories: 2000, protein: 120, carbs: 200, fat: 65 });
-  const [log, setLog] = useLocalStorage('fitness-macro-log', {});
+  const { items: day, add: addEntry, remove: removeEntry } = useEntityList('NutritionEntry', { log_date: todayKey() });
   const [entry, setEntry] = useState({ name: '', calories: '', protein: '', carbs: '', fat: '' });
   const [editGoals, setEditGoals] = useState(false);
-
-  const day = log[todayKey()] || [];
   const totals = day.reduce(
     (acc, e) => ({
       calories: acc.calories + (+e.calories || 0),
@@ -33,7 +32,7 @@ export default function CalorieMacroTracker() {
 
   const add = () => {
     if (!entry.name.trim() && !entry.calories) return;
-    setLog((l) => ({ ...l, [todayKey()]: [{ id: Date.now(), ...entry }, ...(l[todayKey()] || [])] }));
+    addEntry({ name: entry.name, calories: +entry.calories || 0, protein: +entry.protein || 0, carbs: +entry.carbs || 0, fat: +entry.fat || 0, log_date: todayKey() });
     setEntry({ name: '', calories: '', protein: '', carbs: '', fat: '' });
   };
 
@@ -109,7 +108,7 @@ export default function CalorieMacroTracker() {
                 <p className="text-xs text-muted-foreground">P {e.protein} · C {e.carbs} · F {e.fat}</p>
               </div>
               <button
-                onClick={() => setLog((l) => ({ ...l, [todayKey()]: (l[todayKey()] || []).filter((x) => x.id !== e.id) }))}
+                onClick={() => removeEntry(e.id)}
                 className="text-muted-foreground shrink-0"
               >
                 <Trash2 className="w-3.5 h-3.5" />

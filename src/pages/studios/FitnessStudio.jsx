@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Dumbbell, Moon, BedDouble } from 'lucide-react';
+import { useEntityList } from '@/hooks/useEntityList';
 import FitnessHabitsTab from '@/components/health/FitnessHabitsTab';
 import CalorieMacroTracker from '@/components/health/CalorieMacroTracker';
 import { LineChart, Line, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
@@ -24,12 +25,12 @@ const todayKey = () => new Date().toISOString().slice(0, 10);
 
 function MovementTab() {
   const { settings } = useAppSettings();
-  const [workouts, setWorkouts] = useLocalStorage('fitness-workouts', []);
+  const { items: workouts, add: addWorkout, remove: removeWorkout } = useEntityList('Workout', {});
   const [form, setForm] = useState({ name: '', detail: '', date: todayKey() });
 
   const add = () => {
     if (!form.name.trim()) return;
-    setWorkouts([{ id: Date.now(), focus: settings.fitnessFocus, ...form }, ...workouts]);
+    addWorkout({ name: form.name, detail: form.detail, date: form.date, focus: settings.fitnessFocus });
     setForm({ name: '', detail: '', date: todayKey() });
   };
 
@@ -53,7 +54,7 @@ function MovementTab() {
                 <p className="font-medium">{w.name}</p>
                 <p className="text-xs text-muted-foreground">{w.detail} · {w.date} · {FOCUS[w.focus] || 'Movement'}</p>
               </div>
-              <button onClick={() => setWorkouts((x) => x.filter((y) => y.id !== w.id))} className="text-muted-foreground shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
+              <button onClick={() => removeWorkout(w.id)} className="text-muted-foreground shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
             </div>
           ))}
         </div>

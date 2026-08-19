@@ -1,0 +1,23 @@
+{
+  "name": "Workout",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "detail": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "focus": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "date"
+  ]
+}
