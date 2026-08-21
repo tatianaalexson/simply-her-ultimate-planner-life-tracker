@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useLocalStorage } from '@/lib/useLocalStorage';
 import { useEntityList } from '@/hooks/useEntityList';
+import { useSingleton } from '@/hooks/useSingleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,12 @@ const MACROS = [
 ];
 
 export default function CalorieMacroTracker() {
-  const [goals, setGoals] = useLocalStorage('fitness-macro-goals', { calories: 2000, protein: 120, carbs: 200, fat: 65 });
+  const { record: settingsRec, save: saveSettings } = useSingleton('FitnessSetting', { kind: 'fitness' }, { calorie_goal: 2000, protein_goal: 120, carbs_goal: 200, fat_goal: 65 });
+  const goals = { calories: settingsRec?.calorie_goal ?? 2000, protein: settingsRec?.protein_goal ?? 120, carbs: settingsRec?.carbs_goal ?? 200, fat: settingsRec?.fat_goal ?? 65 };
+  const setGoals = (updater) => {
+    const next = updater(goals);
+    saveSettings({ calorie_goal: next.calories, protein_goal: next.protein, carbs_goal: next.carbs, fat_goal: next.fat });
+  };
   const { items: day, add: addEntry, remove: removeEntry } = useEntityList('NutritionEntry', { log_date: todayKey() });
   const [entry, setEntry] = useState({ name: '', calories: '', protein: '', carbs: '', fat: '' });
   const [editGoals, setEditGoals] = useState(false);

@@ -1,0 +1,37 @@
+{
+  "name": "FitnessDaily",
+  "type": "object",
+  "properties": {
+    "log_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "steps": {
+      "type": "number",
+      "default": 0
+    },
+    "water": {
+      "type": "number",
+      "default": 0
+    },
+    "active": {
+      "type": "number",
+      "default": 0
+    },
+    "sleep": {
+      "type": "number",
+      "default": 0
+    },
+    "energy": {
+      "type": "number",
+      "default": 0
+    },
+    "rest_day": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "log_date"
+  ]
+}

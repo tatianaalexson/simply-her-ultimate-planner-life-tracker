@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useLocalStorage } from '@/lib/useLocalStorage';
+import React from 'react';
+import { useDailyRange } from '@/hooks/useDailyRange';
+import { useSingleton } from '@/hooks/useSingleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,13 +11,22 @@ import { Activity, Droplet, Flame, Moon } from 'lucide-react';
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
 export default function FitnessHabitsTab() {
-  const [goals, setGoals] = useLocalStorage('health-fitness-goals', { steps: 8000, water: 8, active: 30, sleep: 4 });
-  const [log, setLog] = useLocalStorage('health-fitness-log', {});
-  const [wearable, setWearable] = useLocalStorage('health-wearable-sync', false);
+  const today = todayKey();
+  const { byDate, saveForDate } = useDailyRange('FitnessDaily', [today], { steps: 0, water: 0, active: 0, sleep: 0 });
+  const { record: settings, save: saveSettings } = useSingleton('FitnessSetting', { kind: 'fitness' }, { steps_goal: 8000, water_goal: 8, active_goal: 30, sleep_goal: 4, wearable: false });
 
-  const day = log[todayKey()] || { steps: 0, water: 0, active: 0, sleep: 0 };
-  const set = (key, val) =>
-    setLog((l) => ({ ...l, [todayKey()]: { ...day, [key]: Math.max(0, val) } }));
+  const day = byDate[today] || { steps: 0, water: 0, active: 0, sleep: 0 };
+  const set = (key, val) => saveForDate(today, { [key]: Math.max(0, val) });
+
+  const goals = {
+    steps: settings?.steps_goal ?? 8000,
+    water: settings?.water_goal ?? 8,
+    active: settings?.active_goal ?? 30,
+    sleep: settings?.sleep_goal ?? 4
+  };
+  const wearable = settings?.wearable ?? false;
+  const setGoal = (key, val) => saveSettings({ [`${key}_goal`]: val });
+  const setWearable = (v) => saveSettings({ wearable: v });
 
   const rings = [
     { key: 'steps', label: 'Steps', value: day.steps, max: goals.steps, color: 'hsl(199 52% 50%)', icon: Activity },
@@ -79,7 +89,7 @@ export default function FitnessHabitsTab() {
               <Input
                 type="number"
                 value={goals[r.key]}
-                onChange={(e) => setGoals((g) => ({ ...g, [r.key]: +e.target.value }))}
+                onChange={(e) => setGoal(r.key, +e.target.value)}
                 className="rounded-2xl"
               />
             </div>

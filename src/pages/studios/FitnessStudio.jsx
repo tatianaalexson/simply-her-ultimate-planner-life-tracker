@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppSettings } from '@/lib/AppSettings';
-import { useLocalStorage } from '@/lib/useLocalStorage';
+import { useDailyRange } from '@/hooks/useDailyRange';
 import StudioShell from '@/components/StudioShell';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,11 +64,15 @@ function MovementTab() {
 }
 
 function RecoveryTab() {
-  const [sleep, setSleep] = useLocalStorage('fitness-sleep', [7, 7.5, 6.5, 8, 7, 7.5, 8]);
-  const [energy, setEnergy] = useLocalStorage('fitness-energy', 6);
-  const [rest, setRest] = useLocalStorage('fitness-rest-days', {});
+  const today = todayKey();
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i)); return d.toISOString().slice(0, 10);
+  });
+  const { byDate, saveForDate } = useDailyRange('FitnessDaily', last7, { sleep: 0, energy: 0, rest_day: false });
+  const sleep = last7.map((d) => byDate[d]?.sleep ?? 0);
+  const energy = byDate[today]?.energy ?? 6;
+  const restToday = byDate[today]?.rest_day ?? false;
   const data = sleep.map((h, i) => ({ day: i, hours: h }));
-  const today = rest[todayKey()];
 
   return (
     <div className="space-y-4">
@@ -89,12 +93,12 @@ function RecoveryTab() {
           <p className="text-xs text-muted-foreground mt-1">Last 7 nights · avg {(sleep.reduce((a, b) => a + b, 0) / sleep.length).toFixed(1)}h</p>
           <div className="grid grid-cols-7 gap-1 mt-2">
             {sleep.map((h, i) => (
-              <Input key={i} type="number" step="0.5" value={h} onChange={(e) => setSleep((s) => s.map((x, j) => (j === i ? +e.target.value : x)))} className="rounded-xl h-9 text-center px-1" />
+              <Input key={i} type="number" step="0.5" value={h} onChange={(e) => saveForDate(last7[i], { sleep: +e.target.value })} className="rounded-xl h-9 text-center px-1" />
             ))}
           </div>
           <div className="mt-3">
             <label className="text-xs">Morning energy: {energy}/10</label>
-            <input type="range" min="1" max="10" value={energy} onChange={(e) => setEnergy(+e.target.value)} className="w-full accent-[hsl(var(--primary))]" />
+            <input type="range" min="1" max="10" value={energy} onChange={(e) => saveForDate(today, { energy: +e.target.value })} className="w-full accent-[hsl(var(--primary))]" />
           </div>
         </CardContent>
       </Card>
@@ -104,10 +108,10 @@ function RecoveryTab() {
           <CardTitle className="font-heading text-base flex items-center gap-2"><BedDouble className="w-4 h-4" /> Rest Days</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <Button size="sm" variant={today ? 'outline' : 'default'} className="rounded-full" onClick={() => setRest((r) => ({ ...r, [todayKey()]: !today }))}>
-            {today ? 'Mark as active' : 'Mark today as rest'}
+          <Button size="sm" variant={restToday ? 'outline' : 'default'} className="rounded-full" onClick={() => saveForDate(today, { rest_day: !restToday })}>
+            {restToday ? 'Mark as active' : 'Mark today as rest'}
           </Button>
-          {Object.entries(rest).filter(([, v]) => v).sort().reverse().map(([d]) => (
+          {last7.filter((d) => byDate[d]?.rest_day).reverse().map((d) => (
             <p key={d} className="text-xs text-muted-foreground">{d} · rest</p>
           ))}
         </CardContent>

@@ -1,0 +1,49 @@
+{
+  "name": "FitnessSetting",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "default": "fitness"
+    },
+    "steps_goal": {
+      "type": "number",
+      "default": 8000
+    },
+    "water_goal": {
+      "type": "number",
+      "default": 8
+    },
+    "active_goal": {
+      "type": "number",
+      "default": 30
+    },
+    "sleep_goal": {
+      "type": "number",
+      "default": 4
+    },
+    "calorie_goal": {
+      "type": "number",
+      "default": 2000
+    },
+    "protein_goal": {
+      "type": "number",
+      "default": 120
+    },
+    "carbs_goal": {
+      "type": "number",
+      "default": 200
+    },
+    "fat_goal": {
+      "type": "number",
+      "default": 65
+    },
+    "wearable": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "kind"
+  ]
+}
