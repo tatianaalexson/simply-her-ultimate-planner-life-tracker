@@ -40,6 +40,10 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
     if (j < 0 || j >= arr.length) return p;
     [arr[i], arr[j]] = [arr[j], arr[i]]; return { ...p, instructions: arr };
   });
+  const subs = Array.isArray(f.substitutions) ? f.substitutions : [];
+  const setSub = (i, k, v) => setF((p) => ({ ...p, substitutions: (p.substitutions || []).map((x, j) => (j === i ? { ...x, [k]: v } : x)) }));
+  const addSub = () => setF((p) => ({ ...p, substitutions: [...(p.substitutions || []), { original: '', substitute: '', ratio: '', instructions: '', notes: '' }] }));
+  const delSub = (i) => setF((p) => ({ ...p, substitutions: (p.substitutions || []).filter((_, j) => j !== i) }));
 
   const submit = () => {
     if (!f.name?.trim()) return;
@@ -143,6 +147,29 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
             <div className="grid grid-cols-2 gap-2">
               <Input type="number" value={st.duration || 0} onChange={(e) => setStep(i, 'duration', parseInt(e.target.value) || 0)} placeholder="Duration (min)" className="rounded-2xl h-8 text-xs" />
               <Input value={st.timer_label || ''} onChange={(e) => setStep(i, 'timer_label', e.target.value)} placeholder="Timer label" className="rounded-2xl h-8 text-xs" />
+            </div>
+          </div>
+        ))}
+      </CardContent></Card>
+
+      <Card className="rounded-3xl"><CardContent className="p-4 space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium">Substitutions</p>
+          <Button size="sm" variant="outline" className="rounded-full" onClick={addSub}><Plus className="w-3 h-3 mr-1" /> Add</Button>
+        </div>
+        <p className="text-[10px] text-muted-foreground">Personal cooking notes — not nutritional or allergy advice.</p>
+        {subs.map((s, i) => (
+          <div key={i} className="space-y-1.5 border-t border-border pt-2 first:border-0 first:pt-0">
+            <div className="grid grid-cols-2 gap-1.5">
+              <Input value={s.original || ''} onChange={(e) => setSub(i, 'original', e.target.value)} placeholder="Original ingredient" className="rounded-2xl h-8 text-xs" />
+              <Input value={s.substitute || ''} onChange={(e) => setSub(i, 'substitute', e.target.value)} placeholder="Substitute" className="rounded-2xl h-8 text-xs" />
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <Input value={s.ratio || ''} onChange={(e) => setSub(i, 'ratio', e.target.value)} placeholder="Ratio / quantity" className="rounded-2xl h-8 text-xs" />
+              <Input value={s.instructions || ''} onChange={(e) => setSub(i, 'instructions', e.target.value)} placeholder="Instructions" className="rounded-2xl h-8 text-xs" />
+            </div>
+            <div className="flex justify-end">
+              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => delSub(i)}><Trash2 className="w-3 h-3 text-muted-foreground" /></Button>
             </div>
           </div>
         ))}

@@ -1,0 +1,141 @@
+{
+  "name": "OccasionPlan",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "occasion_type": {
+      "type": "string",
+      "enum": [
+        "birthday",
+        "christmas",
+        "easter",
+        "thanksgiving",
+        "dinner_party",
+        "brunch",
+        "picnic",
+        "potluck",
+        "holiday",
+        "custom"
+      ],
+      "default": "custom"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "time": {
+      "type": "string"
+    },
+    "guest_count": {
+      "type": "number",
+      "default": 4
+    },
+    "notes": {
+      "type": "string"
+    },
+    "menu": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "section": {
+            "type": "string",
+            "enum": [
+              "appetizers",
+              "main",
+              "sides",
+              "desserts",
+              "drinks",
+              "baking",
+              "custom"
+            ],
+            "default": "main"
+          },
+          "item_type": {
+            "type": "string",
+            "enum": [
+              "recipe",
+              "custom",
+              "store_bought"
+            ],
+            "default": "custom"
+          },
+          "recipe_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "servings": {
+            "type": "number",
+            "default": 1
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "section"
+        ]
+      },
+      "default": []
+    },
+    "prep_tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "due_offset_hours": {
+            "type": "number",
+            "default": 0
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "due_time": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "recipe_id": {
+            "type": "string"
+          },
+          "done": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "default": []
+    },
+    "grocery_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "needed",
+        "added",
+        "shopped"
+      ],
+      "default": "none"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

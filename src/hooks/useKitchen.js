@@ -12,3 +12,8 @@ export const useLeftovers = (query = {}) => useEntityList('Leftover', query, '-d
 export const useKitchenItems = (query = {}) => useEntityList('KitchenItem', query, '-created_date');
 export const useKitchenSettings = () =>
   useSingleton('KitchenSetting', { kind: 'kitchen' }, {});
+export const useKitchenTemplates = (kind) =>
+  useEntityList('KitchenTemplate', kind ? { kind } : {}, '-created_date');
+export const useOccasionPlans = () => useEntityList('OccasionPlan', {}, '-date');
+export const useCookingNotes = (recipeId) =>
+  useEntityList('RecipeCookingNote', recipeId ? { recipe_id: recipeId } : {}, '-note_date');

@@ -1,0 +1,39 @@
+{
+  "name": "RecipeCookingNote",
+  "type": "object",
+  "properties": {
+    "recipe_id": {
+      "type": "string"
+    },
+    "note_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "rating": {
+      "type": "number",
+      "default": 0
+    },
+    "what_worked": {
+      "type": "string"
+    },
+    "what_changed": {
+      "type": "string"
+    },
+    "next_time": {
+      "type": "string"
+    },
+    "feedback": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "recipe_id",
+    "note_date"
+  ]
+}

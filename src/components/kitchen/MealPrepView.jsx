@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Plus, Trash2, ShoppingCart, ChefHat, ChevronRight } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ArrowLeft, Plus, Trash2, ShoppingCart, ChefHat, ChevronRight, Save } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { useMealPrepSessions, useRecipes } from '@/hooks/useKitchen';
 import { useAppSettings } from '@/lib/AppSettings';
@@ -62,9 +64,11 @@ export default function MealPrepView({ onBack, onOpenGroceryReview }) {
 }
 
 function SessionDetail({ session, recipes, onBack, onUpdate, onOpenGroceryReview, canGen, canTasks, canStorage }) {
+  const { isFeatureEnabled } = useAppSettings();
   const [newItem, setNewItem] = useState({ recipe_id: '', custom_name: '', portions: 1, servings: 1 });
   const [task, setTask] = useState({ text: '', type: 'chop', duration: 0 });
   const [output, setOutput] = useState({ name: '', portions: 1, zone: 'fridge', use_by: '' });
+  const [saveTpl, setSaveTpl] = useState(false);
 
   const items = session.items || [];
   const tasks = session.tasks || [];
@@ -93,6 +97,7 @@ function SessionDetail({ session, recipes, onBack, onUpdate, onOpenGroceryReview
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" onClick={onBack} className="rounded-full"><ArrowLeft className="w-4 h-4" /></Button>
         <Input value={session.name} onChange={(e) => onUpdate({ name: e.target.value })} className="rounded-2xl flex-1 font-heading" />
+        {isFeatureEnabled('kit.prepTemplates') && <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setSaveTpl(true)}><Save className="w-4 h-4" /></Button>}
       </div>
 
       <Card className="rounded-3xl"><CardContent className="p-3 space-y-2">
@@ -175,6 +180,38 @@ function SessionDetail({ session, recipes, onBack, onUpdate, onOpenGroceryReview
           <Button className="rounded-full w-full" onClick={addOutput}><Plus className="w-4 h-4 mr-1" /> Add output</Button>
         </CardContent></Card>
       )}
+
+      {saveTpl && <SavePrepTemplateSheet session={session} onClose={() => setSaveTpl(false)} />}
     </div>
+  );
+}
+
+function SavePrepTemplateSheet({ session, onClose }) {
+  const [name, setName] = useState(`${session.name} template`);
+  const [busy, setBusy] = useState(false);
+  const save = async () => {
+    setBusy(true);
+    try {
+      await base44.entities.KitchenTemplate.create({
+        kind: 'meal-prep', name, description: '',
+        items: [], meals: [],
+        prep_items: (session.items || []).map((it) => ({ recipe_id: it.recipe_id || '', custom_name: it.custom_name || '', portions: it.portions || 1, servings: it.servings || 1 })),
+        prep_tasks: (session.tasks || []).map((t) => ({ text: t.text, type: t.type || 'custom', duration: t.duration || 0 })),
+        prep_default_portions: 4, notes: session.notes || '',
+      });
+    } catch { /* ignore */ }
+    setBusy(false); onClose();
+  };
+  return (
+    <Sheet open onOpenChange={(o) => !o && onClose()}>
+      <SheetContent side="bottom" className="rounded-t-3xl pb-8">
+        <SheetHeader className="text-center"><SheetTitle className="font-heading">Save prep template</SheetTitle></SheetHeader>
+        <div className="space-y-3 mt-4">
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Template name" className="rounded-2xl" autoFocus />
+          <p className="text-[11px] text-muted-foreground">Task completion state and prepared dates are not included.</p>
+          <Button className="rounded-full w-full" onClick={save} disabled={busy}>Save template</Button>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }

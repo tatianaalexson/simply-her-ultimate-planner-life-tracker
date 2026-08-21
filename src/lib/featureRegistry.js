@@ -71,6 +71,13 @@ export const FEATURES = [
   { id: 'kit.prepStorage', group: 'kitchen', label: 'Prep Portion Storage' },
   { id: 'kit.leftovers', group: 'kitchen', label: 'Leftovers', defaultEnabled: true, vis: v(false, false, true, false, true) },
   { id: 'kit.equipment', group: 'kitchen', label: 'Kitchen Equipment', defaultEnabled: false, vis: v(false, false, true, false, true) },
+  { id: 'kit.mealTemplates', group: 'kitchen', label: 'Meal Plan Templates', defaultEnabled: false },
+  { id: 'kit.recurringMeals', group: 'kitchen', label: 'Recurring Meals', defaultEnabled: false },
+  { id: 'kit.occasionPlan', group: 'kitchen', label: 'Occasion Planning', defaultEnabled: false, vis: v(false, false, true, false, true) },
+  { id: 'kit.groceryTemplates', group: 'kitchen', label: 'Grocery Templates', defaultEnabled: false },
+  { id: 'kit.prepTemplates', group: 'kitchen', label: 'Meal Prep Templates', defaultEnabled: false },
+  { id: 'kit.substitutions', group: 'kitchen', label: 'Recipe Substitutions', defaultEnabled: false },
+  { id: 'kit.cookingNotes', group: 'kitchen', label: 'Cooking Notes', defaultEnabled: false },
 
   // Home
   { id: 'home.cleaning', group: 'home', label: 'Cleaning', vis: v(true) },

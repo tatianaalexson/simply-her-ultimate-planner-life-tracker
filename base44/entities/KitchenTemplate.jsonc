@@ -1,0 +1,161 @@
+{
+  "name": "KitchenTemplate",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "grocery",
+        "meal-plan",
+        "meal-prep"
+      ],
+      "default": "grocery"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "qty": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "store": {
+            "type": "string"
+          },
+          "est_price": {
+            "type": "number",
+            "default": 0
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "default": []
+    },
+    "meals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "day_of_week": {
+            "type": "number",
+            "default": 0
+          },
+          "meal_slot": {
+            "type": "string",
+            "default": "dinner"
+          },
+          "meal_type": {
+            "type": "string",
+            "enum": [
+              "recipe",
+              "custom",
+              "restaurant",
+              "leftover",
+              "mealprep",
+              "open"
+            ],
+            "default": "custom"
+          },
+          "recipe_id": {
+            "type": "string"
+          },
+          "custom_name": {
+            "type": "string"
+          },
+          "servings": {
+            "type": "number",
+            "default": 1
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "day_of_week",
+          "meal_slot"
+        ]
+      },
+      "default": []
+    },
+    "prep_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "recipe_id": {
+            "type": "string"
+          },
+          "custom_name": {
+            "type": "string"
+          },
+          "portions": {
+            "type": "number",
+            "default": 1
+          },
+          "servings": {
+            "type": "number",
+            "default": 1
+          }
+        },
+        "required": [
+          "servings"
+        ]
+      },
+      "default": []
+    },
+    "prep_tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "default": "custom"
+          },
+          "duration": {
+            "type": "number",
+            "default": 0
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "default": []
+    },
+    "prep_default_portions": {
+      "type": "number",
+      "default": 4
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "name"
+  ]
+}

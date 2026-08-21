@@ -92,6 +92,19 @@
         "none"
       ],
       "default": "category"
+    },
+    "offer_inventory_after_shopping": {
+      "type": "boolean",
+      "default": true
+    },
+    "recurring_default": {
+      "type": "string",
+      "enum": [
+        "none",
+        "weekly",
+        "ask"
+      ],
+      "default": "ask"
     }
   },
   "required": [

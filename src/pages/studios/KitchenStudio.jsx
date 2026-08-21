@@ -13,6 +13,8 @@ import InventoryView from '@/components/kitchen/InventoryView';
 import MealPrepView from '@/components/kitchen/MealPrepView';
 import LeftoversView from '@/components/kitchen/LeftoversView';
 import EquipmentView from '@/components/kitchen/EquipmentView';
+import TemplatesView from '@/components/kitchen/TemplatesView';
+import OccasionView from '@/components/kitchen/OccasionView';
 import KitchenPreferences from '@/components/kitchen/KitchenPreferences';
 
 export default function KitchenStudio() {
@@ -48,6 +50,8 @@ export default function KitchenStudio() {
       case 'mealprep': return isFeatureEnabled('kit.mealprep') ? <MealPrepView onBack={() => nav('home')} onOpenGroceryReview={openGroceryReview} /> : home;
       case 'leftovers': return isFeatureEnabled('kit.leftovers') ? <LeftoversView onBack={() => nav('home')} /> : home;
       case 'equipment': return isFeatureEnabled('kit.equipment') ? <EquipmentView onBack={() => nav('home')} /> : home;
+      case 'templates': return (isFeatureEnabled('kit.mealTemplates') || isFeatureEnabled('kit.groceryTemplates') || isFeatureEnabled('kit.prepTemplates')) ? <TemplatesView onBack={() => nav('home')} /> : home;
+      case 'occasions': return isFeatureEnabled('kit.occasionPlan') ? <OccasionView onBack={() => nav('home')} onOpenGroceryReview={openGroceryReview} /> : home;
       case 'preferences': return <KitchenPreferences onBack={() => nav('home')} />;
       default: return home;
     }

@@ -4,9 +4,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Heart, Clock, Users, ShoppingCart, CalendarDays, ChefHat, Copy, Pencil, Check } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ArrowLeft, Heart, Clock, Users, ShoppingCart, CalendarDays, ChefHat, Copy, Pencil, Check, Repeat, NotebookPen, Star } from 'lucide-react';
 import { useAppSettings } from '@/lib/AppSettings';
 import { todayStr } from '@/components/kitchen/kitchenConstants';
+import { useCookingNotes } from '@/hooks/useKitchen';
 import CookingMode from '@/components/kitchen/CookingMode';
 
 const parseQty = (q) => { if (typeof q === 'number') return q; if (!q) return 0; const s = String(q).trim(); const f = s.match(/^(\d+)\s*\/\s*(\d+)$/); if (f) return parseInt(f[1]) / parseInt(f[2]); const m = s.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)$/); if (m) return parseInt(m[1]) + parseInt(m[2]) / parseInt(m[3]); const n = parseFloat(s.replace(/[^0-9.]/g, '')); return isNaN(n) ? 0 : n; };
@@ -132,6 +135,21 @@ export default function RecipeDetail({ recipe, onBack, onEdit, onOpenGroceryRevi
         </CardContent></Card>
       )}
 
+      {isFeatureEnabled('kit.substitutions') && (recipe.substitutions || []).filter((s) => s.original || s.substitute).length > 0 && (
+        <Card className="rounded-3xl"><CardContent className="p-4 space-y-2">
+          <p className="font-heading text-sm font-medium flex items-center gap-1.5"><Repeat className="w-4 h-4" /> Substitutions</p>
+          {(recipe.substitutions || []).filter((s) => s.original || s.substitute).map((s, i) => (
+            <div key={i} className="border-t border-border pt-2 first:border-0 first:pt-0">
+              <p className="text-sm"><span className="text-muted-foreground">{s.original}</span> → <span className="font-medium">{s.substitute}</span></p>
+              {s.ratio && <p className="text-[11px] text-muted-foreground">Ratio: {s.ratio}</p>}
+              {s.instructions && <p className="text-[11px] text-muted-foreground">{s.instructions}</p>}
+            </div>
+          ))}
+        </CardContent></Card>
+      )}
+
+      {isFeatureEnabled('kit.cookingNotes') && <CookingNotesSection recipe={recipe} />}
+
       <div className="grid grid-cols-2 gap-2">
         {isFeatureEnabled('kit.groceryGen') && (
           <Button className="rounded-full col-span-2" onClick={() => onOpenGroceryReview([{ recipe, plannedServings: targetServ }])}>
@@ -167,5 +185,76 @@ export default function RecipeDetail({ recipe, onBack, onEdit, onOpenGroceryRevi
         </CardContent></Card>
       )}
     </div>
+  );
+}
+
+function CookingNotesSection({ recipe }) {
+  const { items: notes, add, remove } = useCookingNotes(recipe.id);
+  const [open, setOpen] = useState(false);
+  const sorted = [...(notes || [])].sort((a, b) => (b.note_date || '').localeCompare(a.note_date || ''));
+  const last = sorted[0];
+  const nextTime = sorted.find((n) => n.next_time)?.next_time;
+
+  return (
+    <Card className="rounded-3xl"><CardContent className="p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="font-heading text-sm font-medium flex items-center gap-1.5"><NotebookPen className="w-4 h-4" /> Cooking notes</p>
+        <Button size="sm" variant="outline" className="rounded-full" onClick={() => setOpen(true)}>Add note</Button>
+      </div>
+      <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground">
+        {recipe.last_cooked && <span>Last cooked {recipe.last_cooked}</span>}
+        {(recipe.cooked_count || 0) > 0 && <span>· Cooked {recipe.cooked_count}×</span>}
+      </div>
+      {nextTime && (
+        <div className="rounded-2xl bg-accent/50 p-3">
+          <p className="text-[11px] text-muted-foreground mb-0.5">Next time</p>
+          <p className="text-sm">{nextTime}</p>
+        </div>
+      )}
+      {sorted.length > 0 && (
+        <div className="space-y-2">
+          {sorted.slice(0, 3).map((n) => (
+            <div key={n.id} className="border-t border-border pt-2 first:border-0 first:pt-0">
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-medium flex-1">{n.note_date}</p>
+                {n.rating > 0 && <div className="flex">{Array.from({ length: 5 }, (_, i) => <Star key={i} className={`w-3 h-3 ${i < n.rating ? 'fill-current text-amber-400' : 'text-muted-foreground'}`} />)}</div>}
+                <Button size="icon" variant="ghost" className="h-5 w-5" onClick={() => remove(n.id)}><Pencil className="w-2.5 h-2.5 text-muted-foreground" /></Button>
+              </div>
+              {n.what_worked && <p className="text-xs text-muted-foreground mt-0.5">Worked: {n.what_worked}</p>}
+              {n.what_changed && <p className="text-xs text-muted-foreground">Changed: {n.what_changed}</p>}
+              {n.feedback && <p className="text-xs text-muted-foreground italic">{n.feedback}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+      {open && <CookingNoteForm recipeId={recipe.id} onSave={async (data) => { await add(data); setOpen(false); }} onCancel={() => setOpen(false)} />}
+    </CardContent></Card>
+  );
+}
+
+function CookingNoteForm({ recipeId, onSave, onCancel }) {
+  const [f, setF] = useState({ note_date: todayStr(), rating: 0, what_worked: '', what_changed: '', next_time: '', feedback: '', notes: '' });
+  const set = (k, v) => setF((p) => ({ ...p, [k]: v }));
+  return (
+    <Sheet open onOpenChange={(o) => !o && onCancel()}>
+      <SheetContent side="bottom" className="rounded-t-3xl pb-8 max-h-[90vh] overflow-y-auto">
+        <SheetHeader className="text-center"><SheetTitle className="font-heading">Cooking note</SheetTitle></SheetHeader>
+        <div className="space-y-3 mt-4">
+          <Input type="date" value={f.note_date} onChange={(e) => set('note_date', e.target.value)} className="rounded-2xl" />
+          <div className="flex items-center gap-1">
+            <span className="text-sm w-16">Rating</span>
+            {[1, 2, 3, 4, 5].map((i) => <button key={i} onClick={() => set('rating', i)}><Star className={`w-5 h-5 ${i <= f.rating ? 'fill-current text-amber-400' : 'text-muted-foreground'}`} /></button>)}
+          </div>
+          <Textarea value={f.what_worked} onChange={(e) => set('what_worked', e.target.value)} placeholder="What worked" className="rounded-2xl" />
+          <Textarea value={f.what_changed} onChange={(e) => set('what_changed', e.target.value)} placeholder="What I changed" className="rounded-2xl" />
+          <Textarea value={f.next_time} onChange={(e) => set('next_time', e.target.value)} placeholder="What I'd change next time" className="rounded-2xl" />
+          <Textarea value={f.feedback} onChange={(e) => set('feedback', e.target.value)} placeholder="Household / family feedback" className="rounded-2xl" />
+          <div className="flex gap-2">
+            <Button variant="outline" className="rounded-full flex-1" onClick={onCancel}>Cancel</Button>
+            <Button className="rounded-full flex-1" onClick={() => onSave({ ...f, recipe_id: recipeId })}>Save note</Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }

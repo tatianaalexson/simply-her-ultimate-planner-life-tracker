@@ -44,6 +44,35 @@ export const EMPTY = {
   equipment: { title: 'Add kitchen favourites', subtitle: 'Whenever you’d like to.' },
 };
 
+export const OCCASION_TYPES = [
+  { value: 'birthday', label: 'Birthday' }, { value: 'christmas', label: 'Christmas' },
+  { value: 'easter', label: 'Easter' }, { value: 'thanksgiving', label: 'Thanksgiving' },
+  { value: 'dinner_party', label: 'Dinner Party' }, { value: 'brunch', label: 'Brunch' },
+  { value: 'picnic', label: 'Picnic' }, { value: 'potluck', label: 'Potluck' },
+  { value: 'holiday', label: 'Holiday' }, { value: 'custom', label: 'Custom' },
+];
+
+export const MENU_SECTIONS = [
+  { value: 'appetizers', label: 'Appetizers' }, { value: 'main', label: 'Main' },
+  { value: 'sides', label: 'Sides' }, { value: 'desserts', label: 'Desserts' },
+  { value: 'drinks', label: 'Drinks' }, { value: 'baking', label: 'Baking' },
+  { value: 'custom', label: 'Custom' },
+];
+
+export const DAY_OF_WEEK = [
+  { value: 0, label: 'Monday' }, { value: 1, label: 'Tuesday' }, { value: 2, label: 'Wednesday' },
+  { value: 3, label: 'Thursday' }, { value: 4, label: 'Friday' }, { value: 5, label: 'Saturday' },
+  { value: 6, label: 'Sunday' },
+];
+
+export const EMPTY_TEMPLATES = {
+  'meal-plan': { title: 'No meal plan templates yet', subtitle: 'Save a week you love and use it again.' },
+  grocery: { title: 'No grocery templates yet', subtitle: 'Keep your usual shopping lists ready to go.' },
+  'meal-prep': { title: 'No meal prep templates yet', subtitle: 'Save your favourite prep routine for next time.' },
+};
+
+export const EMPTY_OCCASIONS = { title: 'No occasions planned', subtitle: 'Plan a special meal when the time comes.' };
+
 export const todayStr = () => new Date().toISOString().slice(0, 10);
 export const startOfWeek = (date = new Date()) => {
   const d = new Date(date); const day = (d.getDay() + 6) % 7;

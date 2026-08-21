@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
+import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Plus, ShoppingCart, Trash2, Search, ChevronDown, ChevronUp, Package } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ArrowLeft, Plus, ShoppingCart, Trash2, Search, ChevronDown, ChevronUp, Package, Save } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import StaplePicker from '@/components/kitchen/StaplePicker';
 import { useGroceryItems, useMealPlan, useRecipes } from '@/hooks/useKitchen';
@@ -25,6 +27,7 @@ export default function GroceryView({ onBack, onOpenGroceryReview }) {
   const [newList, setNewList] = useState('');
   const [shopMode, setShopMode] = useState(false);
   const [staples, setStaples] = useState(false);
+  const [saveTpl, setSaveTpl] = useState(false);
 
   const filtered = useMemo(() => items.filter((i) => {
     if (hideChecked && i.checked) return false;
@@ -97,6 +100,9 @@ export default function GroceryView({ onBack, onOpenGroceryReview }) {
       )}
       {isFeatureEnabled('kit.frequent') && (
         <Button variant="outline" className="rounded-full w-full" onClick={() => setStaples(true)}><Package className="w-4 h-4 mr-1" /> Add staples</Button>
+      )}
+      {isFeatureEnabled('kit.groceryTemplates') && items.length > 0 && (
+        <Button variant="outline" className="rounded-full w-full" onClick={() => setSaveTpl(true)}><Save className="w-4 h-4 mr-1" /> Save list as template</Button>
       )}
 
       <div className="flex gap-2">
@@ -175,6 +181,36 @@ export default function GroceryView({ onBack, onOpenGroceryReview }) {
       )}
 
       <StaplePicker open={staples} onOpenChange={setStaples} listName={listName} existingItems={items} onAdded={reload} />
+
+      <SaveGroceryTemplateSheet open={saveTpl} onOpenChange={setSaveTpl} items={items} listName={listName} />
     </div>
+  );
+}
+
+function SaveGroceryTemplateSheet({ open, onOpenChange, items, listName }) {
+  const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
+  const save = async () => {
+    setBusy(true);
+    try {
+      await base44.entities.KitchenTemplate.create({
+        kind: 'grocery', name: name || listName, description: '',
+        items: items.map((i) => ({ name: i.name, qty: i.qty, unit: i.unit || '', category: i.category || 'Other', store: i.store || '', est_price: i.est_price || 0, notes: '' })),
+        meals: [], prep_items: [], prep_tasks: [], notes: '',
+      });
+    } catch { /* ignore */ }
+    setBusy(false); setName(''); onOpenChange(false);
+  };
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="rounded-t-3xl pb-8">
+        <SheetHeader className="text-center"><SheetTitle className="font-heading">Save grocery template</SheetTitle></SheetHeader>
+        <div className="space-y-3 mt-4">
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={`Template name (default: ${listName})`} className="rounded-2xl" autoFocus />
+          <p className="text-[11px] text-muted-foreground">{items.length} item(s) will be saved. Shopping state (checked, prices) is not included.</p>
+          <Button className="rounded-full w-full" onClick={save} disabled={busy}>Save template</Button>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }

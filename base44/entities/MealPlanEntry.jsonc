@@ -63,6 +63,50 @@
     },
     "prep_session_id": {
       "type": "string"
+    },
+    "series_id": {
+      "type": "string"
+    },
+    "rrule_freq": {
+      "type": "string",
+      "enum": [
+        "none",
+        "weekly",
+        "biweekly",
+        "weekdays",
+        "monthly",
+        "custom"
+      ],
+      "default": "none"
+    },
+    "rrule_interval": {
+      "type": "number",
+      "default": 1
+    },
+    "rrule_days": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "default": []
+    },
+    "rrule_until": {
+      "type": "string",
+      "format": "date"
+    },
+    "excluded_dates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "is_exception": {
+      "type": "boolean",
+      "default": false
+    },
+    "exception_of": {
+      "type": "string"
     }
   },
   "required": [

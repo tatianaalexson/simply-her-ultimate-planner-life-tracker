@@ -2,7 +2,7 @@ import React from 'react';
 import { useAppSettings } from '@/lib/AppSettings';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, BookOpen, CalendarDays, ShoppingCart, Box, Refrigerator, Snowflake, ChefHat, Utensils, Soup, Settings as SettingsIcon, ArrowRight } from 'lucide-react';
+import { Plus, BookOpen, CalendarDays, ShoppingCart, Box, Refrigerator, Snowflake, ChefHat, Utensils, Soup, Settings as SettingsIcon, ArrowRight, LayoutTemplate, PartyPopper } from 'lucide-react';
 import { useMealPlan, useMealPrepSessions, useGroceryItems } from '@/hooks/useKitchen';
 import { todayStr, startOfWeek, weekDates, fmtDate } from '@/components/kitchen/kitchenConstants';
 
@@ -16,6 +16,8 @@ const QUICK_ACCESS = [
   { view: 'mealprep', label: 'Meal Prep', icon: ChefHat, feat: 'kit.mealprep' },
   { view: 'leftovers', label: 'Leftovers', icon: Utensils, feat: 'kit.leftovers' },
   { view: 'equipment', label: 'Equipment', icon: Soup, feat: 'kit.equipment' },
+  { view: 'templates', label: 'Templates', icon: LayoutTemplate, feat: 'kit.mealTemplates', anyOf: ['kit.mealTemplates', 'kit.groceryTemplates', 'kit.prepTemplates'] },
+  { view: 'occasions', label: 'Occasions', icon: PartyPopper, feat: 'kit.occasionPlan' },
 ];
 
 export default function KitchenHome({ onNavigate, onQuickAdd }) {
@@ -31,7 +33,7 @@ export default function KitchenHome({ onNavigate, onQuickAdd }) {
   const upcomingPrep = preps.filter((p) => p.status !== 'completed').sort((a, b) => (a.date || '').localeCompare(b.date || ''))[0];
   const groceryLeft = groceries.filter((g) => !g.checked).length;
 
-  const quickCards = QUICK_ACCESS.filter((q) => isFeatureEnabled(q.feat));
+  const quickCards = QUICK_ACCESS.filter((q) => (q.anyOf ? q.anyOf.some((f) => isFeatureEnabled(f)) : isFeatureEnabled(q.feat)));
 
   return (
     <div className="space-y-5">
