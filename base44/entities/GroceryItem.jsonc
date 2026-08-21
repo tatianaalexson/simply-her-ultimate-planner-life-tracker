@@ -1,0 +1,83 @@
+{
+  "name": "GroceryItem",
+  "type": "object",
+  "properties": {
+    "list_name": {
+      "type": "string",
+      "default": "Weekly Groceries"
+    },
+    "name": {
+      "type": "string"
+    },
+    "normalized_name": {
+      "type": "string"
+    },
+    "qty": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "default": 0
+    },
+    "unit": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "default": "Other"
+    },
+    "store": {
+      "type": "string"
+    },
+    "est_price": {
+      "type": "number",
+      "default": 0
+    },
+    "actual_price": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    },
+    "checked": {
+      "type": "boolean",
+      "default": false
+    },
+    "recurring": {
+      "type": "string",
+      "enum": [
+        "none",
+        "frequent",
+        "staple",
+        "recurring"
+      ],
+      "default": "none"
+    },
+    "priority": {
+      "type": "boolean",
+      "default": false
+    },
+    "source_recipe_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "source_meal_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "source_prep_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "list_name",
+    "name"
+  ]
+}

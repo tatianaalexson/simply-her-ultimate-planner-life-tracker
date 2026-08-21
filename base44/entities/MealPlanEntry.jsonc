@@ -1,0 +1,72 @@
+{
+  "name": "MealPlanEntry",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "meal_slot": {
+      "type": "string",
+      "enum": [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snack",
+        "custom"
+      ],
+      "default": "dinner"
+    },
+    "custom_slot": {
+      "type": "string"
+    },
+    "meal_type": {
+      "type": "string",
+      "enum": [
+        "recipe",
+        "custom",
+        "restaurant",
+        "leftover",
+        "mealprep",
+        "open"
+      ],
+      "default": "custom"
+    },
+    "recipe_id": {
+      "type": "string"
+    },
+    "custom_name": {
+      "type": "string"
+    },
+    "servings": {
+      "type": "number",
+      "default": 1
+    },
+    "notes": {
+      "type": "string"
+    },
+    "prep_notes": {
+      "type": "string"
+    },
+    "grocery_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "needed",
+        "added",
+        "shopped"
+      ],
+      "default": "none"
+    },
+    "leftover_id": {
+      "type": "string"
+    },
+    "prep_session_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "date",
+    "meal_slot"
+  ]
+}

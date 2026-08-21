@@ -1,0 +1,46 @@
+{
+  "name": "Leftover",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "source_recipe_id": {
+      "type": "string"
+    },
+    "source_meal_id": {
+      "type": "string"
+    },
+    "date_made": {
+      "type": "string",
+      "format": "date"
+    },
+    "portions": {
+      "type": "number",
+      "default": 1
+    },
+    "storage_location": {
+      "type": "string"
+    },
+    "use_by": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "used_up",
+        "discarded"
+      ],
+      "default": "available"
+    }
+  },
+  "required": [
+    "name",
+    "date_made"
+  ]
+}

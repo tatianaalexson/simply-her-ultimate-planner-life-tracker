@@ -1,0 +1,100 @@
+{
+  "name": "KitchenSetting",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "default": "kitchen"
+    },
+    "default_servings": {
+      "type": "number",
+      "default": 4
+    },
+    "favourite_cuisines": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "favourite_meals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "avoided_foods": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "dietary_preferences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "allergies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "common_stores": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "meal_slots": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "breakfast",
+        "lunch",
+        "dinner"
+      ]
+    },
+    "week_start": {
+      "type": "string",
+      "enum": [
+        "monday",
+        "sunday",
+        "saturday"
+      ],
+      "default": "monday"
+    },
+    "pantry_aware": {
+      "type": "boolean",
+      "default": true
+    },
+    "fridge_aware": {
+      "type": "boolean",
+      "default": true
+    },
+    "freezer_aware": {
+      "type": "boolean",
+      "default": true
+    },
+    "grocery_grouping": {
+      "type": "string",
+      "enum": [
+        "category",
+        "store",
+        "none"
+      ],
+      "default": "category"
+    }
+  },
+  "required": [
+    "kind"
+  ]
+}

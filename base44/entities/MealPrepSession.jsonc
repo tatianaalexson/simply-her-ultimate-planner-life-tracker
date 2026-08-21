@@ -1,0 +1,156 @@
+{
+  "name": "MealPrepSession",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "duration": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "completed"
+      ],
+      "default": "planned"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "recipe_id": {
+            "type": "string"
+          },
+          "custom_name": {
+            "type": "string"
+          },
+          "portions": {
+            "type": "number",
+            "default": 1
+          },
+          "servings": {
+            "type": "number",
+            "default": 1
+          }
+        },
+        "required": [
+          "servings"
+        ]
+      },
+      "default": []
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "wash",
+              "chop",
+              "peel",
+              "marinate",
+              "mix",
+              "cook",
+              "bake",
+              "portion",
+              "assemble",
+              "cool",
+              "refrigerate",
+              "freeze",
+              "label",
+              "cleanup",
+              "custom"
+            ],
+            "default": "custom"
+          },
+          "duration": {
+            "type": "number",
+            "default": 0
+          },
+          "done": {
+            "type": "boolean",
+            "default": false
+          },
+          "order": {
+            "type": "number",
+            "default": 0
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "default": []
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "portions": {
+            "type": "number",
+            "default": 1
+          },
+          "zone": {
+            "type": "string",
+            "enum": [
+              "fridge",
+              "freezer",
+              "pantry"
+            ],
+            "default": "fridge"
+          },
+          "storage_location": {
+            "type": "string"
+          },
+          "date_prepared": {
+            "type": "string",
+            "format": "date"
+          },
+          "use_by": {
+            "type": "string",
+            "format": "date"
+          },
+          "reheat_notes": {
+            "type": "string"
+          },
+          "source_recipe_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "portions"
+        ]
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "name",
+    "date"
+  ]
+}

@@ -1,0 +1,184 @@
+{
+  "name": "Recipe",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "user",
+        "family",
+        "imported",
+        "website",
+        "custom"
+      ],
+      "default": "user"
+    },
+    "personal": {
+      "type": "boolean",
+      "default": false
+    },
+    "favourite": {
+      "type": "boolean",
+      "default": false
+    },
+    "rating": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    },
+    "prep_time": {
+      "type": "number",
+      "default": 0
+    },
+    "cook_time": {
+      "type": "number",
+      "default": 0
+    },
+    "rest_time": {
+      "type": "number",
+      "default": 0
+    },
+    "total_time": {
+      "type": "number",
+      "default": 0
+    },
+    "default_servings": {
+      "type": "number",
+      "default": 4
+    },
+    "yield": {
+      "type": "string"
+    },
+    "portion_desc": {
+      "type": "string"
+    },
+    "ingredients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "qty": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "prep": {
+            "type": "string"
+          },
+          "optional": {
+            "type": "boolean",
+            "default": false
+          },
+          "section": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "default": []
+    },
+    "instructions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "number",
+            "default": 0
+          },
+          "timer_label": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "default": []
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snack",
+        "dessert",
+        "baking",
+        "drink",
+        "side",
+        "appetizer",
+        "sauce",
+        "other"
+      ],
+      "default": "dinner"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "collections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "easy",
+        "moderate",
+        "advanced",
+        "custom"
+      ],
+      "default": "easy"
+    },
+    "last_cooked": {
+      "type": "string",
+      "format": "date"
+    },
+    "cooked_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

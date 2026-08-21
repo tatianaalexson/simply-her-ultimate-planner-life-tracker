@@ -1,0 +1,88 @@
+{
+  "name": "FoodInventoryItem",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "normalized_name": {
+      "type": "string"
+    },
+    "zone": {
+      "type": "string",
+      "enum": [
+        "pantry",
+        "fridge",
+        "freezer"
+      ],
+      "default": "pantry"
+    },
+    "storage_location": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "qty": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "default": 1
+    },
+    "unit": {
+      "type": "string"
+    },
+    "date_purchased": {
+      "type": "string",
+      "format": "date"
+    },
+    "date_opened": {
+      "type": "string",
+      "format": "date"
+    },
+    "best_before": {
+      "type": "string",
+      "format": "date"
+    },
+    "expiration": {
+      "type": "string",
+      "format": "date"
+    },
+    "low_threshold": {
+      "type": "number",
+      "default": 0
+    },
+    "staple": {
+      "type": "boolean",
+      "default": false
+    },
+    "favourite": {
+      "type": "boolean",
+      "default": false
+    },
+    "source_recipe_id": {
+      "type": "string"
+    },
+    "source_prep_id": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "used_up",
+        "discarded",
+        "expired"
+      ],
+      "default": "available"
+    }
+  },
+  "required": [
+    "name",
+    "zone"
+  ]
+}
