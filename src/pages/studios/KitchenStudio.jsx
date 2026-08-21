@@ -1,5 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useAppSettings } from '@/lib/AppSettings';
+import { useToast } from '@/components/ui/use-toast';
+import { useKitchenMigration } from '@/hooks/useKitchenMigration';
 import StudioShell from '@/components/StudioShell';
 import KitchenHome from '@/components/kitchen/KitchenHome';
 import KitchenQuickAdd from '@/components/kitchen/KitchenQuickAdd';
@@ -15,6 +17,8 @@ import KitchenPreferences from '@/components/kitchen/KitchenPreferences';
 
 export default function KitchenStudio() {
   const { isFeatureEnabled } = useAppSettings();
+  const { report: migrationReport } = useKitchenMigration();
+  const { toast } = useToast();
   const [view, setView] = useState('home');
   const [quickAdd, setQuickAdd] = useState(false);
   const [review, setReview] = useState({ open: false, sources: [], listName: 'Weekly Groceries' });
@@ -22,6 +26,13 @@ export default function KitchenStudio() {
   const openGroceryReview = useCallback((sources, listName = 'Weekly Groceries') => {
     setReview({ open: true, sources, listName });
   }, []);
+
+  // Subtle, one-time acknowledgment when legacy data was actually moved.
+  useEffect(() => {
+    if (migrationReport && migrationReport.migratedTotal > 0) {
+      toast({ title: 'Your Kitchen has been updated.', description: 'Your existing Kitchen information has been moved into the new Kitchen system.' });
+    }
+  }, [migrationReport]);
 
   const nav = (v) => setView(v);
 
