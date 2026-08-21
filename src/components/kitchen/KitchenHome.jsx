@@ -59,8 +59,11 @@ export default function KitchenHome({ onNavigate, onQuickAdd }) {
 
   const today = todayStr();
   const week = weekDates(startOfWeek());
+  const nextWeek = weekDates(new Date(startOfWeek().getTime() + 7 * 86400000));
+  const fortnight = [...week, ...nextWeek];
   const todayMeals = meals.filter((m) => m.date === today);
   const weekMeals = meals.filter((m) => week.includes(m.date));
+  const dinnersPlanned = meals.filter((m) => fortnight.includes(m.date) && m.meal_slot === 'dinner').length;
   const dinner = todayMeals.find((m) => m.meal_slot === 'dinner');
   const dinnerRecipe = dinner?.recipe_id ? recipes.find((r) => r.id === dinner.recipe_id) : null;
   const upcomingPrep = preps
@@ -210,15 +213,15 @@ export default function KitchenHome({ onNavigate, onQuickAdd }) {
         </div>
       </KitchenSection>
 
-      {/* This week */}
-      <KitchenSection eyebrow="This week">
+      {/* Next 2 weeks */}
+      <KitchenSection eyebrow="Next 2 weeks">
         <div className="grid grid-cols-3 gap-2.5">
           <button
             onClick={() => onNavigate('mealplan')}
             className="rounded-2xl border border-border/60 bg-card p-3 text-center active:scale-[0.98] hover:shadow-sm transition"
           >
-            <p className="font-heading text-xl font-semibold">{weekMeals.length}</p>
-            <p className="text-[11px] text-muted-foreground">meals planned</p>
+            <p className="font-heading text-xl font-semibold">{dinnersPlanned}</p>
+            <p className="text-[11px] text-muted-foreground">dinners planned</p>
           </button>
           <button
             onClick={() => onNavigate('groceries')}

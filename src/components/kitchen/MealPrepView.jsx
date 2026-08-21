@@ -6,13 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { ArrowLeft, Plus, Trash2, ShoppingCart, ChefHat, ChevronRight, Save } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, ShoppingCart, ChefHat, ChevronRight, Save, Utensils } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { useMealPrepSessions, useRecipes } from '@/hooks/useKitchen';
 import { useAppSettings } from '@/lib/AppSettings';
 import { PREP_TASK_TYPES, EMPTY, todayStr } from '@/components/kitchen/kitchenConstants';
+import { recipePerServing } from '@/lib/nutrition';
 
-export default function MealPrepView({ onBack, onOpenGroceryReview }) {
+export default function MealPrepView({ onBack, onOpenGroceryReview, onLogFood }) {
   const { isFeatureEnabled } = useAppSettings();
   const { items: sessions, add, update, remove } = useMealPrepSessions();
   const { items: recipes } = useRecipes();
@@ -30,15 +31,14 @@ export default function MealPrepView({ onBack, onOpenGroceryReview }) {
   };
 
   if (open) {
-    return <SessionDetail session={open} recipes={recipes} onBack={() => setOpenId(null)} onUpdate={(data) => update(open.id, data)} onOpenGroceryReview={() => generateGroceries(open)} canGen={isFeatureEnabled('kit.prepGen')} canTasks={isFeatureEnabled('kit.prepTasks')} canStorage={isFeatureEnabled('kit.prepStorage')} />;
+    return <SessionDetail session={open} recipes={recipes} onBack={() => setOpenId(null)} onUpdate={(data) => update(open.id, data)} onOpenGroceryReview={() => generateGroceries(open)} onLogFood={onLogFood} canLog={isFeatureEnabled('kit.foodDiary')} canGen={isFeatureEnabled('kit.prepGen')} canTasks={isFeatureEnabled('kit.prepTasks')} canStorage={isFeatureEnabled('kit.prepStorage')} />;
   }
 
   return (
     <div className="space-y-4 pb-8">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={onBack} className="rounded-full"><ArrowLeft className="w-4 h-4" /></Button>
         <h2 className="font-heading text-lg font-semibold flex-1">Meal Prep</h2>
-        <Button size="sm" className="rounded-full" onClick={() => add({ name: 'New prep session', date: todayStr(), status: 'planned', items: [], tasks: [], outputs: [] }).then((s) => setOpenId(s.id))}><Plus className="w-4 h-4 mr-1" /> New</Button>
+        <Button size="sm" className="rounded-full" onClick={() => add({ name: 'New prep session', date: todayStr(), status: 'planned', items: [], tasks: [], outputs: [] }).then((s) => setOpenId(s.id))}><Plus className="w-4 h-4 mr-1" /> New Prep Session</Button>
       </div>
 
       {sessions.length === 0 ? (
@@ -63,7 +63,7 @@ export default function MealPrepView({ onBack, onOpenGroceryReview }) {
   );
 }
 
-function SessionDetail({ session, recipes, onBack, onUpdate, onOpenGroceryReview, canGen, canTasks, canStorage }) {
+function SessionDetail({ session, recipes, onBack, onUpdate, onOpenGroceryReview, onLogFood, canLog, canGen, canTasks, canStorage }) {
   const { isFeatureEnabled } = useAppSettings();
   const [newItem, setNewItem] = useState({ recipe_id: '', custom_name: '', portions: 1, servings: 1 });
   const [task, setTask] = useState({ text: '', type: 'chop', duration: 0 });
@@ -112,13 +112,22 @@ function SessionDetail({ session, recipes, onBack, onUpdate, onOpenGroceryReview
 
       <Card className="rounded-3xl"><CardContent className="p-3 space-y-2">
         <p className="text-sm font-medium">Items</p>
-        {items.map((it, i) => (
-          <div key={i} className="flex items-center gap-2 text-sm border-t border-border pt-2 first:border-0 first:pt-0">
-            <span className="flex-1">{it.custom_name}</span>
-            <span className="text-xs text-muted-foreground">{it.portions} portions</span>
-            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => onUpdate({ items: items.filter((_, j) => j !== i) })}><Trash2 className="w-3 h-3 text-muted-foreground" /></Button>
-          </div>
-        ))}
+        {items.map((it, i) => {
+          const rec = it.recipe_id ? recipes.find((r) => r.id === it.recipe_id) : null;
+          const pn = rec ? recipePerServing(rec) : null;
+          return (
+            <div key={i} className="flex items-center gap-2 text-sm border-t border-border pt-2 first:border-0 first:pt-0">
+              <span className="flex-1 truncate">{it.custom_name}</span>
+              <span className="text-xs text-muted-foreground shrink-0">{it.portions} portions</span>
+              {canLog && pn && (
+                <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0" title="Log portion" onClick={() => onLogFood({ name: it.custom_name, perServingNut: pn, servings: 1, source_type: 'meal_prep', prep_session_id: session.id })}>
+                  <Utensils className="w-3 h-3 text-muted-foreground" />
+                </Button>
+              )}
+              <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0" onClick={() => onUpdate({ items: items.filter((_, j) => j !== i) })}><Trash2 className="w-3 h-3 text-muted-foreground" /></Button>
+            </div>
+          );
+        })}
         <div className="flex gap-2">
           <select value={newItem.recipe_id} onChange={(e) => setNewItem((p) => ({ ...p, recipe_id: e.target.value }))} className="rounded-2xl border bg-card px-3 py-2 text-sm flex-1">
             <option value="">Recipe (or custom)</option>

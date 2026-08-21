@@ -9,8 +9,9 @@ import { ArrowLeft, Plus, Trash2, Utensils, CalendarDays, Minus, Move, Flame } f
 import EmptyState from '@/components/EmptyState';
 import { useLeftovers, useRecipes } from '@/hooks/useKitchen';
 import { EMPTY, todayStr } from '@/components/kitchen/kitchenConstants';
+import { recipePerServing } from '@/lib/nutrition';
 
-export default function LeftoversView({ onBack }) {
+export default function LeftoversView({ onBack, onLogFood }) {
   const { items, add, update, remove } = useLeftovers({ status: 'available' });
   const { items: recipes } = useRecipes();
   const [showAdd, setShowAdd] = useState(false);
@@ -45,7 +46,6 @@ export default function LeftoversView({ onBack }) {
   return (
     <div className="space-y-4 pb-8">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={onBack} className="rounded-full"><ArrowLeft className="w-4 h-4" /></Button>
         <h2 className="font-heading text-lg font-semibold flex-1">Leftovers</h2>
         <Button size="sm" className="rounded-full" onClick={() => setShowAdd((s) => !s)}><Plus className="w-4 h-4 mr-1" /> Add</Button>
       </div>
@@ -87,6 +87,9 @@ export default function LeftoversView({ onBack }) {
                 </div>
                 <div className="flex gap-1.5 mt-2 flex-wrap">
                   <Button size="sm" variant="outline" className="rounded-full h-7 text-xs" onClick={() => takePortion(l)}><Minus className="w-3 h-3 mr-1" /> Use portion</Button>
+                  {onLogFood && (() => { const rec = l.source_recipe_id ? recipes.find((r) => r.id === l.source_recipe_id) : null; const pn = rec ? recipePerServing(rec) : null; return (
+                    <Button size="sm" variant="outline" className="rounded-full h-7 text-xs" onClick={() => onLogFood(pn ? { name: l.name, perServingNut: pn, servings: 1, source_type: 'leftover', leftover_id: l.id } : { name: l.name, source_type: 'leftover', leftover_id: l.id })}><Utensils className="w-3 h-3 mr-1" /> Log as Eaten</Button>
+                  ); })()}
                   <Button size="sm" variant="outline" className="rounded-full h-7 text-xs" onClick={() => planLeftover(l, 0)}><CalendarDays className="w-3 h-3 mr-1" /> Today</Button>
                   <Button size="sm" variant="outline" className="rounded-full h-7 text-xs" onClick={() => planLeftover(l, 1)}>Tomorrow</Button>
                   <Button size="sm" variant="outline" className="rounded-full h-7 text-xs" onClick={() => setMoveItem(l)}><Move className="w-3 h-3 mr-1" /> Move</Button>
