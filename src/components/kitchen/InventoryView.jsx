@@ -2,20 +2,26 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Plus, Trash2, Search, Minus } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Search, Minus, Move, Pencil } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { useInventory } from '@/hooks/useKitchen';
-import { GROCERY_CATEGORIES, INVENTORY_STATUS, EMPTY, todayStr } from '@/components/kitchen/kitchenConstants';
+import { useAppSettings } from '@/lib/AppSettings';
+import { GROCERY_CATEGORIES, EMPTY, todayStr } from '@/components/kitchen/kitchenConstants';
 
 const ZONE_EMPTY = { pantry: EMPTY.pantry, fridge: EMPTY.fridge, freezer: EMPTY.freezer };
+const ZONES = ['pantry', 'fridge', 'freezer'];
 
 export default function InventoryView({ zone, onBack }) {
+  const { settings } = useAppSettings();
+  const useSoonDays = settings.kitchenUseSoonDays ?? 4;
   const { items, add, update, remove } = useInventory(zone);
   const [q, setQ] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: '', qty: '1', unit: '', category: '', storage_location: '', best_before: '', low_threshold: 0, staple: false });
+  const [moveItem, setMoveItem] = useState(null);
+  const [adjustItem, setAdjustItem] = useState(null);
+  const [adjustVal, setAdjustVal] = useState('');
 
   const filtered = useMemo(() => items.filter((i) => {
     if (q && !i.name?.toLowerCase().includes(q.toLowerCase())) return false;
@@ -26,13 +32,21 @@ export default function InventoryView({ zone, onBack }) {
     if (!i.best_before && !i.expiration) return false;
     const d = new Date(i.best_before || i.expiration);
     const diff = (d - new Date()) / 86400000;
-    return diff >= 0 && diff <= 4;
+    return diff >= 0 && diff <= useSoonDays;
   };
 
   const adjustQty = (i, delta) => {
     const cur = i.amount || parseFloat(i.qty) || 0;
     const next = Math.max(0, cur + delta);
     update(i.id, { amount: next, qty: String(next) });
+  };
+
+  const setAmount = (i) => {
+    const v = parseFloat(adjustVal);
+    if (isNaN(v)) return;
+    const next = Math.max(0, v);
+    update(i.id, { amount: next, qty: String(next) });
+    setAdjustItem(null); setAdjustVal('');
   };
 
   const saveItem = () => {
@@ -93,9 +107,11 @@ export default function InventoryView({ zone, onBack }) {
                     <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => adjustQty(i, 1)}><Plus className="w-3 h-3" /></Button>
                   </div>
                 </div>
-                <div className="flex gap-1.5 mt-2">
+                <div className="flex gap-1.5 mt-2 flex-wrap">
+                  <Button size="sm" variant="ghost" className="rounded-full h-7 text-xs" onClick={() => { setAdjustItem(i); setAdjustVal(String(i.amount || i.qty || '')); }}><Pencil className="w-3 h-3 mr-1" /> Set</Button>
+                  <Button size="sm" variant="ghost" className="rounded-full h-7 text-xs" onClick={() => setMoveItem(i)}><Move className="w-3 h-3 mr-1" /> Move</Button>
                   {i.status === 'available' ? (
-                    <Button size="sm" variant="ghost" className="rounded-full h-7 text-xs" onClick={() => update(i.id, { status: 'used_up' })}>Mark used</Button>
+                    <Button size="sm" variant="ghost" className="rounded-full h-7 text-xs" onClick={() => update(i.id, { status: 'used_up' })}>Used up</Button>
                   ) : (
                     <Button size="sm" variant="ghost" className="rounded-full h-7 text-xs" onClick={() => update(i.id, { status: 'available' })}>Restore</Button>
                   )}
@@ -105,6 +121,33 @@ export default function InventoryView({ zone, onBack }) {
             </Card>
           ))}
         </div>
+      )}
+
+      {adjustItem && (
+        <Card className="rounded-3xl border-primary"><CardContent className="p-3 space-y-2">
+          <p className="font-heading text-sm font-medium">Set amount — {adjustItem.name}</p>
+          <div className="flex gap-2 items-center">
+            <Input type="number" value={adjustVal} onChange={(e) => setAdjustVal(e.target.value)} className="rounded-2xl w-28" autoFocus />
+            <span className="text-sm text-muted-foreground">{adjustItem.unit}</span>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="ghost" className="rounded-full flex-1" onClick={() => setAdjustItem(null)}>Cancel</Button>
+            <Button className="rounded-full flex-1" onClick={() => setAmount(adjustItem)}>Save</Button>
+          </div>
+        </CardContent></Card>
+      )}
+
+      {moveItem && (
+        <Card className="rounded-3xl border-primary"><CardContent className="p-3 space-y-2">
+          <p className="font-heading text-sm font-medium">Move — {moveItem.name}</p>
+          <p className="text-[11px] text-muted-foreground">Currently in {zone}</p>
+          <div className="flex gap-2">
+            {ZONES.filter((z) => z !== zone).map((z) => (
+              <Button key={z} variant="outline" className="rounded-full flex-1 capitalize" onClick={() => { update(moveItem.id, { zone: z }); setMoveItem(null); }}>{z}</Button>
+            ))}
+          </div>
+          <Button variant="ghost" className="rounded-full w-full" onClick={() => setMoveItem(null)}>Cancel</Button>
+        </CardContent></Card>
       )}
     </div>
   );

@@ -48,7 +48,8 @@ const DEFAULTS = {
   customModes: [],
   featureVisibility: {},
   fontPairing: 'lora',
-  accentOverride: ''
+  accentOverride: '',
+  kitchenUseSoonDays: 4
 };
 
 const AppSettingsContext = createContext(null);

@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft } from 'lucide-react';
 import { useKitchenSettings } from '@/hooks/useKitchen';
+import { useAppSettings } from '@/lib/AppSettings';
 
 export default function KitchenPreferences({ onBack }) {
   const { record, save, loading } = useKitchenSettings();
+  const { settings, update } = useAppSettings();
   const [tagInputs, setTagInputs] = useState({});
 
   if (loading || !record) return <div className="py-8 text-center text-sm text-muted-foreground">Loading…</div>;
@@ -45,6 +47,13 @@ export default function KitchenPreferences({ onBack }) {
           </select>
         </label>
         <Input value={arr('common_stores')} onChange={(e) => setTagInputs({ ...tagInputs, common_stores: e.target.value })} onBlur={(e) => setArr('common_stores', e.target.value)} placeholder="Common stores (comma separated)" className="rounded-2xl" />
+      </CardContent></Card>
+
+      <Card className="rounded-3xl"><CardContent className="p-4 space-y-3">
+        <p className="text-sm font-medium">Inventory</p>
+        <label className="flex items-center justify-between text-sm"><span>Use-soon window (days)</span>
+          <Input type="number" value={settings.kitchenUseSoonDays ?? 4} onChange={(e) => update('kitchenUseSoonDays', parseInt(e.target.value) || 4)} className="rounded-2xl w-20" />
+        </label>
       </CardContent></Card>
 
       <Card className="rounded-3xl"><CardContent className="p-4 space-y-3">

@@ -5,7 +5,7 @@ import { useAppSettings } from '@/lib/AppSettings';
 import { getGroup } from '@/lib/featureRegistry';
 import EmptyState from '@/components/EmptyState';
 import { Input } from '@/components/ui/input';
-import { Search as SearchIcon, CheckSquare, BookOpen, Target, Heart, GraduationCap, ArrowRight } from 'lucide-react';
+import { Search as SearchIcon, CheckSquare, BookOpen, Target, Heart, GraduationCap, ArrowRight, CalendarDays, ShoppingCart, Box, Refrigerator, Snowflake, ChefHat, Utensils, Soup } from 'lucide-react';
 
 const SOURCES = [
   { key: 'Task', label: 'Tasks', icon: CheckSquare, to: '/planner', fields: (x) => [x.title, x.notes] },
@@ -15,12 +15,25 @@ const SOURCES = [
   { key: 'StudyEntry', label: 'Studies', icon: GraduationCap, to: '/reflection', fields: (x) => [x.title, ...Object.values(x.content || {})] }
 ];
 
+const KITCHEN_SOURCE_DEFS = [
+  { key: 'Recipe', label: 'Recipe', icon: BookOpen, feat: 'kit.recipes', fields: (x) => [x.name, ...(x.tags || []), x.notes, ...(x.collections || [])] },
+  { key: 'MealPlanEntry', label: 'Meal Plan', icon: CalendarDays, feat: 'kit.mealplan', fields: (x) => [x.custom_name, x.notes] },
+  { key: 'GroceryItem', label: 'Grocery Item', icon: ShoppingCart, feat: 'kit.grocery', fields: (x) => [x.name, x.list_name] },
+  { key: 'FoodInventoryItem', label: 'Pantry/Fridge/Freezer', icon: Box, feat: 'kit.pantry', fields: (x) => [x.name] },
+  { key: 'MealPrepSession', label: 'Meal Prep', icon: ChefHat, feat: 'kit.mealprep', fields: (x) => [x.name, x.notes] },
+  { key: 'Leftover', label: 'Leftover', icon: Utensils, feat: 'kit.leftovers', fields: (x) => [x.name, x.notes] },
+  { key: 'KitchenItem', label: 'Kitchen Equipment', icon: Soup, feat: 'kit.equipment', fields: (x) => [x.name, x.brand, x.notes] },
+];
+
 export default function SearchPage() {
   const navigate = useNavigate();
-  const { visibleFeaturesFor, isGroupEnabled } = useAppSettings();
+  const { visibleFeaturesFor, isGroupEnabled, isFeatureEnabled } = useAppSettings();
   const [q, setQ] = useState('');
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const kitchenSources = KITCHEN_SOURCE_DEFS.filter((d) => isFeatureEnabled(d.feat)).map((d) => ({ ...d, to: '/life/kitchen' }));
+  const allSources = [...SOURCES, ...kitchenSources];
 
   const run = async (query) => {
     setQ(query);
@@ -28,7 +41,7 @@ export default function SearchPage() {
     setLoading(true);
     const lc = query.toLowerCase();
     const out = {};
-    await Promise.all(SOURCES.map(async (s) => {
+    await Promise.all(allSources.map(async (s) => {
       try {
         const items = await base44.entities[s.key].list('-created_date', 60);
         const hits = (items || []).filter((x) => s.fields(x).filter(Boolean).some((f) => f.toLowerCase().includes(lc)));
@@ -86,7 +99,7 @@ export default function SearchPage() {
               <p className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1.5"><s.icon className="w-3.5 h-3.5" /> {label} · {hits.length}</p>
               <div className="space-y-1.5">
                 {hits.slice(0, 6).map((h) => {
-                  const primary = h.title || h.text || h.content || Object.values(h.content || {})[0] || h.notes || 'Untitled';
+                  const primary = h.title || h.name || h.text || h.content || Object.values(h.content || {})[0] || h.notes || 'Untitled';
                   return (
                     <button key={h.id} onClick={() => navigate(s.to)} className="w-full text-left rounded-2xl border bg-card px-3 py-2 shadow-sm active:scale-[0.98] transition">
                       <p className="text-sm truncate">{primary}</p>

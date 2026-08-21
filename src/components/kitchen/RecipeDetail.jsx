@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Heart, Clock, Users, ShoppingCart, CalendarDays, ChefHat, Copy, Pencil, Check } from 'lucide-react';
 import { useAppSettings } from '@/lib/AppSettings';
 import { todayStr } from '@/components/kitchen/kitchenConstants';
+import CookingMode from '@/components/kitchen/CookingMode';
 
 const parseQty = (q) => { if (typeof q === 'number') return q; if (!q) return 0; const s = String(q).trim(); const f = s.match(/^(\d+)\s*\/\s*(\d+)$/); if (f) return parseInt(f[1]) / parseInt(f[2]); const m = s.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)$/); if (m) return parseInt(m[1]) + parseInt(m[2]) / parseInt(m[3]); const n = parseFloat(s.replace(/[^0-9.]/g, '')); return isNaN(n) ? 0 : n; };
 const fmtQty = (n) => { if (!n) return '0'; if (Number.isInteger(n)) return String(n); const ds = [2, 3, 4, 8, 16]; for (const d of ds) { const w = Math.floor(n); const r = n - w; const num = Math.round(r * d); if (Math.abs(num / d - r) < 0.01 && num > 0) return w > 0 ? `${w} ${num}/${d}` : `${num}/${d}`; } return String(Math.round(n * 100) / 100); };
@@ -61,30 +62,7 @@ export default function RecipeDetail({ recipe, onBack, onEdit, onOpenGroceryRevi
   };
 
   if (cooking) {
-    const steps = (recipe.instructions || []).filter((s) => s.text);
-    const cur = steps[stepIdx];
-    return (
-      <div className="fixed inset-0 z-50 bg-background flex flex-col p-6">
-        <div className="flex items-center justify-between mb-4">
-          <Button variant="ghost" className="rounded-full" onClick={() => setCooking(false)}><ArrowLeft className="w-4 h-4 mr-1" /> Exit</Button>
-          <p className="font-heading text-sm">{recipe.name}</p>
-        </div>
-        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-          <p className="text-xs text-muted-foreground mb-2">Step {stepIdx + 1} of {steps.length}</p>
-          {cur?.title && <p className="font-heading text-lg mb-2">{cur.title}</p>}
-          <p className="text-lg leading-relaxed">{cur?.text}</p>
-          {cur?.duration > 0 && <p className="text-sm text-muted-foreground mt-3">⏱ {cur.duration} min{cur.timer_label ? ` · ${cur.timer_label}` : ''}</p>}
-        </div>
-        <div className="flex gap-2 max-w-md mx-auto w-full">
-          <Button variant="outline" className="rounded-full flex-1" disabled={stepIdx === 0} onClick={() => setStepIdx((i) => Math.max(0, i - 1))}>Previous</Button>
-          {stepIdx < steps.length - 1 ? (
-            <Button className="rounded-full flex-1" onClick={() => setStepIdx((i) => i + 1)}>Next step</Button>
-          ) : (
-            <Button className="rounded-full flex-1" onClick={() => setCooking(false)}>Done</Button>
-          )}
-        </div>
-      </div>
-    );
+    return <CookingMode recipe={recipe} stepIdx={stepIdx} setStepIdx={setStepIdx} onExit={() => setCooking(false)} />;
   }
 
   return (
