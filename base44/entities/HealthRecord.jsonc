@@ -1,0 +1,384 @@
+{
+  "name": "HealthRecord",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "check_in",
+        "symptom",
+        "flare",
+        "vital",
+        "treatment",
+        "supplement",
+        "allergy",
+        "test",
+        "dose",
+        "surgery",
+        "procedure",
+        "injury",
+        "family_history",
+        "immunization",
+        "hospitalization",
+        "emergency_visit",
+        "pregnancy",
+        "medical_event",
+        "reflection",
+        "coping_tool",
+        "med_change",
+        "document",
+        "profile"
+      ],
+      "default": "medical_event"
+    },
+    "name": {
+      "type": "string"
+    },
+    "log_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "log_time": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "related_condition_id": {
+      "type": "string"
+    },
+    "related_appointment_id": {
+      "type": "string"
+    },
+    "related_test_id": {
+      "type": "string"
+    },
+    "medication_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "mental",
+        "physical"
+      ],
+      "default": "physical"
+    },
+    "severity": {
+      "type": "number",
+      "default": 0
+    },
+    "frequency": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "trigger": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "symptoms": {
+      "type": "string"
+    },
+    "what_helped": {
+      "type": "string"
+    },
+    "mood": {
+      "type": "string"
+    },
+    "emotions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "energy": {
+      "type": "number",
+      "default": 0
+    },
+    "stress": {
+      "type": "number",
+      "default": 0
+    },
+    "sleep_quality": {
+      "type": "number",
+      "default": 0
+    },
+    "irritability": {
+      "type": "number",
+      "default": 0
+    },
+    "motivation": {
+      "type": "number",
+      "default": 0
+    },
+    "concentration": {
+      "type": "number",
+      "default": 0
+    },
+    "social_battery": {
+      "type": "number",
+      "default": 0
+    },
+    "appetite": {
+      "type": "number",
+      "default": 0
+    },
+    "custom_factors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label"
+        ]
+      },
+      "default": []
+    },
+    "what_happened": {
+      "type": "string"
+    },
+    "what_i_need": {
+      "type": "string"
+    },
+    "what_didnt_help": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "coping_type": {
+      "type": "string"
+    },
+    "steps": {
+      "type": "string"
+    },
+    "favorite": {
+      "type": "boolean",
+      "default": false
+    },
+    "vital_type": {
+      "type": "string"
+    },
+    "value": {
+      "type": "number",
+      "default": 0
+    },
+    "secondary_value": {
+      "type": "number",
+      "default": 0
+    },
+    "unit": {
+      "type": "string"
+    },
+    "dose": {
+      "type": "string"
+    },
+    "site": {
+      "type": "string"
+    },
+    "reminder": {
+      "type": "boolean",
+      "default": false
+    },
+    "time_slot": {
+      "type": "string"
+    },
+    "dose_status": {
+      "type": "string",
+      "enum": [
+        "taken",
+        "skipped",
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "allergy_type": {
+      "type": "string",
+      "enum": [
+        "drug",
+        "food",
+        "env",
+        "intolerance",
+        "other"
+      ],
+      "default": "other"
+    },
+    "reaction": {
+      "type": "string"
+    },
+    "date_discovered": {
+      "type": "string",
+      "format": "date"
+    },
+    "test_type": {
+      "type": "string"
+    },
+    "result": {
+      "type": "string"
+    },
+    "range": {
+      "type": "string"
+    },
+    "flag": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "high",
+        "low",
+        "critical",
+        "pending"
+      ],
+      "default": "normal"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "range": {
+            "type": "string"
+          },
+          "flag": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "high",
+              "low",
+              "critical",
+              "pending"
+            ],
+            "default": "normal"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "default": []
+    },
+    "attachment_url": {
+      "type": "string"
+    },
+    "doc_type": {
+      "type": "string",
+      "enum": [
+        "lab_report",
+        "imaging",
+        "referral",
+        "discharge",
+        "other"
+      ],
+      "default": "other"
+    },
+    "body_area": {
+      "type": "string"
+    },
+    "treatment": {
+      "type": "string"
+    },
+    "recovery_notes": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "relation": {
+      "type": "string"
+    },
+    "condition_name": {
+      "type": "string"
+    },
+    "dose_info": {
+      "type": "string"
+    },
+    "outcome": {
+      "type": "string"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "change_type": {
+      "type": "string",
+      "enum": [
+        "start",
+        "stop",
+        "pause",
+        "restart",
+        "dose",
+        "frequency",
+        "prescriber",
+        "other"
+      ],
+      "default": "other"
+    },
+    "field": {
+      "type": "string"
+    },
+    "previous_value": {
+      "type": "string"
+    },
+    "new_value": {
+      "type": "string"
+    },
+    "prescriber": {
+      "type": "string"
+    },
+    "blood_type": {
+      "type": "string"
+    },
+    "organ_donor": {
+      "type": "boolean",
+      "default": false
+    },
+    "wellness_focus": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "required": [
+    "kind",
+    "log_date"
+  ]
+}

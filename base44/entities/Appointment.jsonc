@@ -1,0 +1,94 @@
+{
+  "name": "Appointment",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "specialty": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "time": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "completed",
+        "cancelled"
+      ],
+      "default": "upcoming"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "related_condition_id": {
+      "type": "string"
+    },
+    "related_test_id": {
+      "type": "string"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "asked",
+              "answered"
+            ],
+            "default": "pending"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "default": []
+    },
+    "followup_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "followup_tasks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "attachment_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "date"
+  ]
+}

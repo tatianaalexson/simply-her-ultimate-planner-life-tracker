@@ -1,0 +1,62 @@
+{
+  "name": "Condition",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "confirmed",
+        "suspected",
+        "historical"
+      ],
+      "default": "confirmed"
+    },
+    "description": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "managed",
+        "flaring",
+        "remission",
+        "resolved",
+        "investigating"
+      ],
+      "default": "active"
+    },
+    "diagnosis_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "diagnosed_by": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "mild",
+        "moderate",
+        "severe",
+        "debilitating"
+      ],
+      "default": "mild"
+    },
+    "frequency": {
+      "type": "string"
+    },
+    "triggers": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

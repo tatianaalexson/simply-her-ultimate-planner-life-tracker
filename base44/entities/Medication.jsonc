@@ -1,0 +1,58 @@
+{
+  "name": "Medication",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "generic_name": {
+      "type": "string"
+    },
+    "dose": {
+      "type": "string"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "frequency": {
+      "type": "string"
+    },
+    "instructions": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "prescriber": {
+      "type": "string"
+    },
+    "pharmacy": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "reminder": {
+      "type": "boolean",
+      "default": false
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "related_condition_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
