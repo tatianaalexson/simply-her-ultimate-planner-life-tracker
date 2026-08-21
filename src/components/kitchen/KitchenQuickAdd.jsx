@@ -4,7 +4,7 @@ import { useAppSettings } from '@/lib/AppSettings';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BookOpen, CalendarDays, ShoppingCart, Box, Refrigerator, Snowflake, ChefHat, Utensils, Soup, ArrowRight } from 'lucide-react';
+import { BookOpen, CalendarDays, ShoppingCart, Box, Refrigerator, Snowflake, ChefHat, Utensils, Soup, ArrowRight, PartyPopper } from 'lucide-react';
 import { GROCERY_CATEGORIES, todayStr } from '@/components/kitchen/kitchenConstants';
 
 // Quick Add — simple actions are created inline; complex ones (full recipe,
@@ -19,6 +19,7 @@ export default function KitchenQuickAdd({ open, onOpenChange, onNavigate }) {
     { id: 'recipes', label: 'Add Recipe', icon: BookOpen, view: 'recipes', enabled: isFeatureEnabled('kit.recipes') },
     { id: 'mealprep', label: 'Start Meal Prep', icon: ChefHat, view: 'mealprep', enabled: isFeatureEnabled('kit.mealprep') },
     { id: 'equipment', label: 'Add Kitchen Item', icon: Soup, view: 'equipment', enabled: isFeatureEnabled('kit.equipment') },
+    { id: 'occasions', label: 'Plan an Occasion', icon: PartyPopper, view: 'occasions', enabled: isFeatureEnabled('kit.occasionPlan') },
   ].filter((a) => a.enabled);
 
   const simple = [

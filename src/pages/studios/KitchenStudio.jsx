@@ -16,6 +16,7 @@ import EquipmentView from '@/components/kitchen/EquipmentView';
 import TemplatesView from '@/components/kitchen/TemplatesView';
 import OccasionView from '@/components/kitchen/OccasionView';
 import KitchenPreferences from '@/components/kitchen/KitchenPreferences';
+import KitchenNav from '@/components/kitchen/KitchenNav';
 
 export default function KitchenStudio() {
   const { isFeatureEnabled } = useAppSettings();
@@ -59,6 +60,7 @@ export default function KitchenStudio() {
 
   return (
     <StudioShell title="Kitchen">
+      <KitchenNav view={view} onNavigate={nav} />
       {renderView()}
       <KitchenQuickAdd open={quickAdd} onOpenChange={setQuickAdd} onNavigate={(v) => { setQuickAdd(false); nav(v); }} />
       <GroceryReviewDialog open={review.open} onOpenChange={(o) => setReview((p) => ({ ...p, open: o }))} sources={review.sources} listName={review.listName} />
