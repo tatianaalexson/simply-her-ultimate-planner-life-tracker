@@ -79,6 +79,18 @@ export const FEATURES = [
   { id: 'kit.substitutions', group: 'kitchen', label: 'Recipe Substitutions', defaultEnabled: false },
   { id: 'kit.cookingNotes', group: 'kitchen', label: 'Cooking Notes', defaultEnabled: false },
 
+  // Kitchen — Nutrition (shared with Fitness via NutritionEntry + FitnessSetting)
+  { id: 'kit.nutrition', group: 'kitchen', label: 'Nutrition', defaultEnabled: false, vis: v(false, false, true, false, true) },
+  { id: 'kit.foodDiary', group: 'kitchen', label: 'Food Diary', defaultEnabled: false, vis: v(false, false, true, false, true) },
+  { id: 'kit.savedFoods', group: 'kitchen', label: 'Saved Foods', defaultEnabled: false },
+  { id: 'kit.calories', group: 'kitchen', label: 'Calorie Tracking', defaultEnabled: false },
+  { id: 'kit.macros', group: 'kitchen', label: 'Macro Tracking', defaultEnabled: false },
+  { id: 'kit.moreNutrients', group: 'kitchen', label: 'Additional Nutrients', defaultEnabled: false },
+  { id: 'kit.nutrientGoals', group: 'kitchen', label: 'Nutrition Goals', defaultEnabled: false },
+  { id: 'kit.nutritionHistory', group: 'kitchen', label: 'Nutrition History', defaultEnabled: false },
+  { id: 'kit.recipeNutrition', group: 'kitchen', label: 'Recipe Nutrition', defaultEnabled: false },
+  { id: 'kit.plannedNutrition', group: 'kitchen', label: 'Planned Nutrition', defaultEnabled: false },
+
   // Home
   { id: 'home.cleaning', group: 'home', label: 'Cleaning', vis: v(true) },
   { id: 'home.laundry', group: 'home', label: 'Laundry' },

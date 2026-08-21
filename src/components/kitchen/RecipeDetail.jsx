@@ -6,18 +6,21 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { ArrowLeft, Heart, Clock, Users, ShoppingCart, CalendarDays, ChefHat, Copy, Pencil, Check, Repeat, NotebookPen, Star } from 'lucide-react';
+import { ArrowLeft, Heart, Clock, Users, ShoppingCart, CalendarDays, ChefHat, Copy, Pencil, Check, Repeat, NotebookPen, Star, Utensils, Salad } from 'lucide-react';
 import { useAppSettings } from '@/lib/AppSettings';
 import { todayStr } from '@/components/kitchen/kitchenConstants';
 import { useCookingNotes } from '@/hooks/useKitchen';
 import CookingMode from '@/components/kitchen/CookingMode';
+import LogFoodSheet from '@/components/kitchen/nutrition/LogFoodSheet';
+import RecipeNutritionSheet from '@/components/kitchen/nutrition/RecipeNutritionSheet';
+import { recipePerServing, fmtNut } from '@/lib/nutrition';
 
 const parseQty = (q) => { if (typeof q === 'number') return q; if (!q) return 0; const s = String(q).trim(); const f = s.match(/^(\d+)\s*\/\s*(\d+)$/); if (f) return parseInt(f[1]) / parseInt(f[2]); const m = s.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)$/); if (m) return parseInt(m[1]) + parseInt(m[2]) / parseInt(m[3]); const n = parseFloat(s.replace(/[^0-9.]/g, '')); return isNaN(n) ? 0 : n; };
 const fmtQty = (n) => { if (!n) return '0'; if (Number.isInteger(n)) return String(n); const ds = [2, 3, 4, 8, 16]; for (const d of ds) { const w = Math.floor(n); const r = n - w; const num = Math.round(r * d); if (Math.abs(num / d - r) < 0.01 && num > 0) return w > 0 ? `${w} ${num}/${d}` : `${num}/${d}`; } return String(Math.round(n * 100) / 100); };
 
 const SCALES = [{ k: 0.5, label: '½×' }, { k: 1, label: '1×' }, { k: 1.5, label: '1.5×' }, { k: 2, label: '2×' }];
 
-export default function RecipeDetail({ recipe, onBack, onEdit, onOpenGroceryReview, onDuplicate }) {
+export default function RecipeDetail({ recipe, onBack, onEdit, onOpenGroceryReview, onDuplicate, onUpdate }) {
   const { isFeatureEnabled } = useAppSettings();
   const [scale, setScale] = useState(1);
   const [customServings, setCustomServings] = useState('');
@@ -26,6 +29,8 @@ export default function RecipeDetail({ recipe, onBack, onEdit, onOpenGroceryRevi
   const [showLeftover, setShowLeftover] = useState(false);
   const [leftoverParts, setLeftoverParts] = useState(1);
   const [leftoverLoc, setLeftoverLoc] = useState('Fridge');
+  const [logFood, setLogFood] = useState({ open: false, prefill: null });
+  const [nutOpen, setNutOpen] = useState(false);
 
   const defaultServ = recipe.default_servings || 1;
   const targetServ = customServings ? parseInt(customServings) : Math.round(defaultServ * scale);
@@ -103,6 +108,17 @@ export default function RecipeDetail({ recipe, onBack, onEdit, onOpenGroceryRevi
         <p className="text-xs text-muted-foreground">Cooking for {targetServ}</p>
       </CardContent></Card>
 
+      {isFeatureEnabled('kit.recipeNutrition') && recipePerServing(recipe) && (() => { const pn = recipePerServing(recipe); return (
+        <Card className="rounded-3xl"><CardContent className="p-4 flex items-center justify-between">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Per serving</p>
+            <p className="font-heading text-base font-semibold">{fmtNut(pn.calories)} cal</p>
+            {isFeatureEnabled('kit.macros') && <p className="text-xs text-muted-foreground">P {fmtNut(pn.protein,'g')} · C {fmtNut(pn.carbs,'g')} · F {fmtNut(pn.fat,'g')}</p>}
+          </div>
+          <Button size="sm" variant="outline" className="rounded-full" onClick={() => setNutOpen(true)}><Salad className="w-4 h-4 mr-1" /> Nutrition</Button>
+        </CardContent></Card>
+      ); })()}
+
       {Object.entries(sections).map(([sec, ings]) => (
         <Card key={sec} className="rounded-3xl"><CardContent className="p-4 space-y-1.5">
           <p className="font-heading text-sm font-medium">{sec}</p>
@@ -163,6 +179,12 @@ export default function RecipeDetail({ recipe, onBack, onEdit, onOpenGroceryRevi
           <Button variant="outline" className="rounded-full" onClick={() => onOpenGroceryReview([{ recipe, plannedServings: targetServ, prep: { id: null } }])}><ChefHat className="w-4 h-4 mr-1" /> Add to prep</Button>
         )}
         <Button variant="outline" className="rounded-full" onClick={markCooked}><Check className="w-4 h-4 mr-1" /> Mark as cooked</Button>
+        {isFeatureEnabled('kit.foodDiary') && (() => { const pn = recipePerServing(recipe); return (
+          <Button variant="outline" className="rounded-full" onClick={() => setLogFood({ open: true, prefill: pn ? { name: recipe.name, perServingNut: pn, servings: 1, source_type: 'recipe', recipe_id: recipe.id } : null })}><Utensils className="w-4 h-4 mr-1" /> Log this meal</Button>
+        ); })()}
+        {isFeatureEnabled('kit.recipeNutrition') && (
+          <Button variant="outline" className="rounded-full" onClick={() => setNutOpen(true)}><Salad className="w-4 h-4 mr-1" /> Edit nutrition</Button>
+        )}
         {isFeatureEnabled('kit.cookingMode') && (recipe.instructions || []).some((s) => s.text) && (
           <Button variant="outline" className="rounded-full col-span-2" onClick={() => { setStepIdx(0); setCooking(true); }}>Start cooking mode</Button>
         )}
@@ -183,6 +205,13 @@ export default function RecipeDetail({ recipe, onBack, onEdit, onOpenGroceryRevi
             <Button className="rounded-full flex-1" onClick={saveLeftover}>Save leftover</Button>
           </div>
         </CardContent></Card>
+      )}
+
+      {isFeatureEnabled('kit.foodDiary') && (
+        <LogFoodSheet open={!!logFood.open} onOpenChange={(o) => setLogFood((p) => ({ ...p, open: o }))} prefill={logFood.prefill} />
+      )}
+      {isFeatureEnabled('kit.recipeNutrition') && nutOpen && (
+        <RecipeNutritionSheet recipe={recipe} onSave={async (data) => { await onUpdate?.(data); setNutOpen(false); }} onClose={() => setNutOpen(false)} />
       )}
     </div>
   );

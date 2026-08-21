@@ -9,7 +9,7 @@ import { GROCERY_CATEGORIES, todayStr } from '@/components/kitchen/kitchenConsta
 
 // Quick Add — simple actions are created inline; complex ones (full recipe,
 // meal prep session, equipment detail) navigate to the full creation screen.
-export default function KitchenQuickAdd({ open, onOpenChange, onNavigate }) {
+export default function KitchenQuickAdd({ open, onOpenChange, onNavigate, onLogFood }) {
   const { isFeatureEnabled } = useAppSettings();
   const [inline, setInline] = useState(null); // 'grocery' | 'meal' | 'pantry' | 'fridge' | 'freezer' | 'leftover'
 
@@ -20,6 +20,7 @@ export default function KitchenQuickAdd({ open, onOpenChange, onNavigate }) {
     { id: 'mealprep', label: 'Start Meal Prep', icon: ChefHat, view: 'mealprep', enabled: isFeatureEnabled('kit.mealprep') },
     { id: 'equipment', label: 'Add Kitchen Item', icon: Soup, view: 'equipment', enabled: isFeatureEnabled('kit.equipment') },
     { id: 'occasions', label: 'Plan an Occasion', icon: PartyPopper, view: 'occasions', enabled: isFeatureEnabled('kit.occasionPlan') },
+    { id: 'logfood', label: 'Log Food', icon: Utensils, view: null, onLog: true, enabled: isFeatureEnabled('kit.foodDiary') },
   ].filter((a) => a.enabled);
 
   const simple = [
@@ -52,7 +53,7 @@ export default function KitchenQuickAdd({ open, onOpenChange, onNavigate }) {
                 <p className="text-[11px] text-muted-foreground px-1">Full creation</p>
                 <div className="space-y-2">
                   {complex.map((a) => (
-                    <button key={a.id} onClick={() => { onOpenChange(false); onNavigate(a.view); }} className="w-full flex items-center gap-3 rounded-2xl border border-border bg-card p-3 active:scale-[0.98] transition">
+                    <button key={a.id} onClick={() => { onOpenChange(false); if (a.onLog) { onLogFood?.(); } else { onNavigate(a.view); } }} className="w-full flex items-center gap-3 rounded-2xl border border-border bg-card p-3 active:scale-[0.98] transition">
                       <a.icon className="w-5 h-5 text-primary" strokeWidth={1.5} />
                       <span className="text-sm flex-1 text-left">{a.label}</span>
                       <ArrowRight className="w-4 h-4 text-muted-foreground" />

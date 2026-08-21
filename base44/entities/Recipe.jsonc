@@ -69,6 +69,47 @@
     "portion_desc": {
       "type": "string"
     },
+    "nutrition_basis": {
+      "type": "string",
+      "enum": [
+        "none",
+        "per_serving",
+        "total"
+      ],
+      "default": "none"
+    },
+    "calories": {
+      "type": "number",
+      "default": 0
+    },
+    "protein": {
+      "type": "number",
+      "default": 0
+    },
+    "carbs": {
+      "type": "number",
+      "default": 0
+    },
+    "fat": {
+      "type": "number",
+      "default": 0
+    },
+    "fibre": {
+      "type": "number",
+      "default": 0
+    },
+    "sugar": {
+      "type": "number",
+      "default": 0
+    },
+    "sodium": {
+      "type": "number",
+      "default": 0
+    },
+    "saturated_fat": {
+      "type": "number",
+      "default": 0
+    },
     "ingredients": {
       "type": "array",
       "items": {

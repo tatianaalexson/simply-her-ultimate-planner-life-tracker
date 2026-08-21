@@ -1,9 +1,35 @@
 {
-  "name": "NutritionEntry",
+  "name": "SavedFood",
   "type": "object",
   "properties": {
     "name": {
       "type": "string"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "barcode": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "default": "Other"
+    },
+    "favourite": {
+      "type": "boolean",
+      "default": false
+    },
+    "serving_size": {
+      "type": "number",
+      "default": 1
+    },
+    "serving_unit": {
+      "type": "string",
+      "default": "serving"
+    },
+    "servings_per_container": {
+      "type": "number",
+      "default": 1
     },
     "calories": {
       "type": "number",
@@ -20,55 +46,6 @@
     "fat": {
       "type": "number",
       "default": 0
-    },
-    "log_date": {
-      "type": "string",
-      "format": "date"
-    },
-    "log_time": {
-      "type": "string"
-    },
-    "meal_slot": {
-      "type": "string",
-      "enum": [
-        "breakfast",
-        "lunch",
-        "dinner",
-        "snack",
-        "custom"
-      ],
-      "default": "snack"
-    },
-    "custom_slot": {
-      "type": "string"
-    },
-    "servings": {
-      "type": "number",
-      "default": 1
-    },
-    "source_type": {
-      "type": "string",
-      "enum": [
-        "recipe",
-        "saved_food",
-        "meal_prep",
-        "leftover",
-        "custom",
-        "manual"
-      ],
-      "default": "manual"
-    },
-    "recipe_id": {
-      "type": "string"
-    },
-    "saved_food_id": {
-      "type": "string"
-    },
-    "prep_session_id": {
-      "type": "string"
-    },
-    "leftover_id": {
-      "type": "string"
     },
     "fibre": {
       "type": "number",
@@ -101,9 +78,12 @@
     "iron": {
       "type": "number",
       "default": 0
+    },
+    "notes": {
+      "type": "string"
     }
   },
   "required": [
-    "log_date"
+    "name"
   ]
 }

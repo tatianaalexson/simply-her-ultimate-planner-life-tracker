@@ -82,6 +82,7 @@ export default function RecipeList({ onBack, onOpenGroceryReview }) {
         onEdit={() => editRecipe(selected)}
         onOpenGroceryReview={onOpenGroceryReview}
         onDuplicate={duplicate}
+        onUpdate={(data) => update(selected.id, data)}
       />
     );
   }

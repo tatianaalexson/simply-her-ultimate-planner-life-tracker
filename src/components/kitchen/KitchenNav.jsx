@@ -12,7 +12,7 @@ import {
 import {
   Home, CalendarDays, BookOpen, ShoppingCart, ChefHat,
   Box, Refrigerator, Snowflake, Utensils, LayoutTemplate,
-  PartyPopper, Soup, Settings as SettingsIcon, MoreHorizontal,
+  PartyPopper, Soup, Settings as SettingsIcon, MoreHorizontal, Salad,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +33,7 @@ const SECONDARY = [
   { view: 'fridge', label: 'Fridge', icon: Refrigerator, feat: 'kit.fridge' },
   { view: 'freezer', label: 'Freezer', icon: Snowflake, feat: 'kit.freezer' },
   { view: 'leftovers', label: 'Leftovers', icon: Utensils, feat: 'kit.leftovers' },
+  { view: 'nutrition', label: 'Nutrition', icon: Salad, feat: 'kit.nutrition' },
   { view: 'occasions', label: 'Occasions', icon: PartyPopper, feat: 'kit.occasionPlan' },
   {
     view: 'templates',
