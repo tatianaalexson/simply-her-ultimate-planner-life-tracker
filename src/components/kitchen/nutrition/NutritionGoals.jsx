@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNutritionGoals } from '@/hooks/useNutrition';
 import { MACRO_FIELDS } from '@/lib/nutrition';
+import { Check } from 'lucide-react';
 
-// Shared goals editor — writes to the SAME FitnessSetting singleton that the
-// Fitness studio reads. One source of truth for calorie/macro targets.
+// Calm goals editor — user-configured targets, not prescribed.
+// Writes to the shared FitnessSetting singleton (one source of truth for
+// Kitchen + Fitness). No automatic calorie target calculation.
 export default function NutritionGoals() {
   const { record, save } = useNutritionGoals();
   const [f, setF] = useState(null);
@@ -31,24 +33,26 @@ export default function NutritionGoals() {
   };
 
   return (
-    <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">Your daily targets. Shared with Fitness.</p>
-      <div className="space-y-2">
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">Your daily targets — set by you. Shared with Fitness.</p>
+
+      <div className="rounded-3xl border border-border/60 bg-card p-4 space-y-3">
         <div>
-          <label className="text-[11px] text-muted-foreground">Daily calories</label>
-          <Input type="number" value={goals.calorie_goal} onChange={(e) => set('calorie_goal', e.target.value)} className="rounded-2xl" />
+          <label className="text-xs text-muted-foreground">Daily calories</label>
+          <Input type="number" value={goals.calorie_goal} onChange={(e) => set('calorie_goal', e.target.value)} className="rounded-2xl mt-1" />
         </div>
         <div className="grid grid-cols-3 gap-2">
           {MACRO_FIELDS.map((m) => (
             <div key={m.key}>
-              <label className="text-[11px] text-muted-foreground">{m.label} ({m.unit})</label>
-              <Input type="number" value={goals[`${m.key}_goal`]} onChange={(e) => set(`${m.key}_goal`, e.target.value)} className="rounded-2xl" />
+              <label className="text-xs text-muted-foreground">{m.label} ({m.unit})</label>
+              <Input type="number" value={goals[`${m.key}_goal`]} onChange={(e) => set(`${m.key}_goal`, e.target.value)} className="rounded-2xl mt-1" />
             </div>
           ))}
         </div>
       </div>
+
       <Button className="rounded-full" onClick={saveGoals}>Save goals</Button>
-      {saved && <p className="text-xs text-emerald-600">Goals saved.</p>}
+      {saved && <p className="text-xs text-emerald-600 flex items-center gap-1"><Check className="w-3 h-3" /> Goals saved.</p>}
     </div>
   );
 }

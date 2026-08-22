@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAppSettings } from '@/lib/AppSettings';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Search, Plus, Clock, Heart, Utensils, ChevronRight } from 'lucide-react';
+import { Search, Plus, Clock, Heart, Utensils, ChevronRight, ChefHat, Package } from 'lucide-react';
 import { useSavedFoods, useRecentFoods } from '@/hooks/useNutrition';
-import { useRecipes } from '@/hooks/useKitchen';
+import { useRecipes, useMealPrepSessions, useLeftovers } from '@/hooks/useKitchen';
 import {
   recipePerServing, savedFoodPerServing, scaleNutrition, fmtNut,
   MACRO_FIELDS, OPTIONAL_NUTRIENTS,
@@ -33,9 +32,6 @@ function defaultSlot() {
   return 'dinner';
 }
 
-// Reusable, fast food-logging sheet. Callers may pass `prefill` to log a known
-// source (recipe / leftover / meal-prep / saved food) directly; otherwise a
-// picker (Recent · Saved · Recipes · Custom) is shown.
 export default function LogFoodSheet({ open, onOpenChange, prefill }) {
   const { isFeatureEnabled } = useAppSettings();
   const { toast } = useToast();
@@ -98,9 +94,7 @@ export default function LogFoodSheet({ open, onOpenChange, prefill }) {
     setBusy(false);
   };
 
-  const scaled = confirm
-    ? scaleNutrition(confirm.perServingNut, parseFloat(confirm.servings) || 0)
-    : null;
+  const scaled = confirm ? scaleNutrition(confirm.perServingNut, parseFloat(confirm.servings) || 0) : null;
 
   return (
     <Sheet open={open} onOpenChange={(o) => { if (!o) setConfirm(null); onOpenChange(o); }}>
@@ -110,21 +104,9 @@ export default function LogFoodSheet({ open, onOpenChange, prefill }) {
         </SheetHeader>
 
         {confirm ? (
-          <ConfirmForm
-            confirm={confirm}
-            setConfirm={setConfirm}
-            scaled={scaled}
-            showMacros={showMacros}
-            moreNutrients={moreNutrients}
-            busy={busy}
-            onLog={log}
-            onCancel={() => setConfirm(null)}
-          />
+          <ConfirmForm confirm={confirm} setConfirm={setConfirm} scaled={scaled} showMacros={showMacros} moreNutrients={moreNutrients} busy={busy} onLog={log} onCancel={() => setConfirm(null)} />
         ) : (
-          <Picker
-            showMacros={showMacros}
-            onPick={(c) => setConfirm({ ...c, slot: defaultSlot(), date: todayStr() })}
-          />
+          <Picker showMacros={showMacros} onPick={(c) => setConfirm({ ...c, slot: defaultSlot(), date: todayStr() })} />
         )}
       </SheetContent>
     </Sheet>
@@ -150,14 +132,9 @@ function ConfirmForm({ confirm, setConfirm, scaled, showMacros, moreNutrients, b
         <p className="text-[11px] text-muted-foreground mb-1.5">Meal</p>
         <div className="flex gap-1.5 flex-wrap">
           {SLOTS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => set('slot', s.id)}
-              className={cn(
-                'text-xs px-3 py-1.5 rounded-full transition',
-                confirm.slot === s.id ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
-              )}
-            >
+            <button key={s.id} onClick={() => set('slot', s.id)}
+              className={cn('text-xs px-3 py-1.5 rounded-full transition',
+                confirm.slot === s.id ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground')}>
               {s.label}
             </button>
           ))}
@@ -168,14 +145,10 @@ function ConfirmForm({ confirm, setConfirm, scaled, showMacros, moreNutrients, b
         <p className="text-[11px] text-muted-foreground">This log</p>
         <p className="font-heading text-lg font-semibold">{fmtNut(scaled?.calories)} <span className="text-xs font-normal text-muted-foreground">cal</span></p>
         {showMacros && (
-          <p className="text-xs text-muted-foreground">
-            {MACRO_FIELDS.map((m) => `${m.label} ${fmtNut(scaled?.[m.key], m.unit)}`).join(' · ')}
-          </p>
+          <p className="text-xs text-muted-foreground">{MACRO_FIELDS.map((m) => `${m.label} ${fmtNut(scaled?.[m.key], m.unit)}`).join(' · ')}</p>
         )}
         {moreNutrients && (
-          <p className="text-[11px] text-muted-foreground">
-            {OPTIONAL_NUTRIENTS.slice(0, 4).map((m) => `${m.label} ${fmtNut(scaled?.[m.key], m.unit)}`).join(' · ')}
-          </p>
+          <p className="text-[11px] text-muted-foreground">{OPTIONAL_NUTRIENTS.slice(0, 4).map((m) => `${m.label} ${fmtNut(scaled?.[m.key], m.unit)}`).join(' · ')}</p>
         )}
       </div>
 
@@ -189,31 +162,41 @@ function ConfirmForm({ confirm, setConfirm, scaled, showMacros, moreNutrients, b
 
 function Picker({ showMacros, onPick }) {
   const [tab, setTab] = useState('recent');
+  const [q, setQ] = useState('');
   const tabs = [
     { id: 'recent', label: 'Recent', icon: Clock },
-    { id: 'saved', label: 'Saved', icon: Heart },
+    { id: 'favourites', label: 'Favourites', icon: Heart },
     { id: 'recipes', label: 'Recipes', icon: Utensils },
+    { id: 'saved', label: 'Saved Foods', icon: Package },
+    { id: 'mealprep', label: 'Meal Prep', icon: ChefHat },
+    { id: 'leftovers', label: 'Leftovers', icon: Utensils },
     { id: 'custom', label: 'Custom', icon: Plus },
   ];
   return (
     <div className="mt-4 space-y-3">
-      <div className="flex gap-1.5">
+      {/* Search */}
+      <div className="relative">
+        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search foods…" className="rounded-2xl pl-9" />
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
         {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={cn(
-              'flex-1 text-xs py-1.5 rounded-full transition flex items-center justify-center gap-1',
-              tab === t.id ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
-            )}
-          >
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={cn('flex items-center gap-1 text-xs px-3 py-1.5 rounded-full whitespace-nowrap transition',
+              tab === t.id ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground')}>
             <t.icon className="w-3.5 h-3.5" /> {t.label}
           </button>
         ))}
       </div>
-      {tab === 'recent' && <RecentList onPick={onPick} showMacros={showMacros} />}
-      {tab === 'saved' && <SavedList onPick={onPick} showMacros={showMacros} />}
-      {tab === 'recipes' && <RecipeList onPick={onPick} showMacros={showMacros} />}
+
+      {tab === 'recent' && <RecentList onPick={onPick} showMacros={showMacros} q={q} />}
+      {tab === 'favourites' && <FavouritesList onPick={onPick} showMacros={showMacros} q={q} />}
+      {tab === 'recipes' && <RecipeList onPick={onPick} q={q} />}
+      {tab === 'saved' && <SavedList onPick={onPick} q={q} />}
+      {tab === 'mealprep' && <MealPrepList onPick={onPick} q={q} />}
+      {tab === 'leftovers' && <LeftoverList onPick={onPick} q={q} />}
       {tab === 'custom' && <CustomEntry onPick={onPick} showMacros={showMacros} />}
     </div>
   );
@@ -231,30 +214,32 @@ function Row({ name, sub, onPick }) {
   );
 }
 
-function RecentList({ onPick, showMacros }) {
+function matchQ(name, q) {
+  if (!q) return true;
+  return name?.toLowerCase().includes(q.toLowerCase());
+}
+
+function RecentList({ onPick, showMacros, q }) {
   const { items } = useRecentFoods();
   const dedup = [];
   const seen = new Set();
   (items || []).forEach((e) => {
     const key = (e.name || '').toLowerCase().trim();
-    if (!key || seen.has(key)) return;
+    if (!key || seen.has(key) || !matchQ(e.name, q)) return;
     seen.add(key);
     dedup.push(e);
   });
-  const list = dedup.slice(0, 12);
-  if (list.length === 0) return <p className="text-xs text-muted-foreground text-center py-6">No recent foods yet.</p>;
+  const list = dedup.slice(0, 15);
+  if (list.length === 0) return <p className="text-xs text-muted-foreground text-center py-6">{q ? 'No matches.' : 'No recent foods yet.'}</p>;
   return (
     <div className="space-y-2">
       {list.map((e) => (
-        <Row
-          key={e.id}
-          name={e.name}
-          sub={`${fmtNut(e.calories)} cal${showMacros ? ` · P ${fmtNut(e.protein,'g')} · C ${fmtNut(e.carbs,'g')} · F ${fmtNut(e.fat,'g')}` : ''}`}
+        <Row key={e.id} name={e.name}
+          sub={`${fmtNut(e.calories)} cal${showMacros ? ` · P ${fmtNut(e.protein, 'g')} · C ${fmtNut(e.carbs, 'g')} · F ${fmtNut(e.fat, 'g')}` : ''}`}
           onPick={() => onPick({
             name: e.name,
             perServingNut: { calories: e.calories, protein: e.protein, carbs: e.carbs, fat: e.fat, fibre: e.fibre, sugar: e.sugar, sodium: e.sodium, saturated_fat: e.saturated_fat },
-            servings: 1,
-            source_type: 'manual',
+            servings: 1, source_type: 'manual',
           })}
         />
       ))}
@@ -262,48 +247,106 @@ function RecentList({ onPick, showMacros }) {
   );
 }
 
-function SavedList({ onPick, showMacros }) {
-  const { items } = useSavedFoods();
-  if (!items || items.length === 0) return <p className="text-xs text-muted-foreground text-center py-6">No saved foods yet — add one in Foods.</p>;
+function FavouritesList({ onPick, showMacros, q }) {
+  const { items: foods } = useSavedFoods();
+  const { items: recipes } = useRecipes();
+  const favFoods = (foods || []).filter((f) => f.favourite && matchQ(f.name, q));
+  const favRecipes = (recipes || []).filter((r) => r.favourite && recipePerServing(r) && matchQ(r.name, q));
+  if (favFoods.length === 0 && favRecipes.length === 0) return <p className="text-xs text-muted-foreground text-center py-6">{q ? 'No matches.' : 'No favourites yet — star foods or recipes to pin them here.'}</p>;
   return (
     <div className="space-y-2">
-      {items.map((f) => (
-        <Row
-          key={f.id}
-          name={f.name}
-          sub={`${fmtNut(f.calories)} cal${f.serving_size ? ` · ${f.serving_size} ${f.serving_unit || ''}` : ''}`}
-          onPick={() => onPick({
-            name: f.name,
-            perServingNut: savedFoodPerServing(f),
-            servings: 1,
-            source_type: 'saved_food',
-            saved_food_id: f.id,
-          })}
+      {favFoods.map((f) => (
+        <Row key={f.id} name={f.name} sub={`${fmtNut(f.calories)} cal · ${f.serving_size} ${f.serving_unit || ''}`}
+          onPick={() => onPick({ name: f.name, perServingNut: savedFoodPerServing(f), servings: 1, source_type: 'saved_food', saved_food_id: f.id })}
+        />
+      ))}
+      {favRecipes.map((r) => {
+        const nut = recipePerServing(r);
+        return <Row key={r.id} name={r.name} sub={`${fmtNut(nut.calories)} cal / serving`}
+          onPick={() => onPick({ name: r.name, perServingNut: nut, servings: 1, source_type: 'recipe', recipe_id: r.id })}
+        />;
+      })}
+    </div>
+  );
+}
+
+function SavedList({ onPick, q }) {
+  const { items } = useSavedFoods();
+  const list = (items || []).filter((f) => matchQ(f.name, q));
+  if (list.length === 0) return <p className="text-xs text-muted-foreground text-center py-6">{q ? 'No matches.' : 'No saved foods yet — add one in Foods.'}</p>;
+  return (
+    <div className="space-y-2">
+      {list.map((f) => (
+        <Row key={f.id} name={f.name} sub={`${fmtNut(f.calories)} cal · ${f.serving_size} ${f.serving_unit || ''}`}
+          onPick={() => onPick({ name: f.name, perServingNut: savedFoodPerServing(f), servings: 1, source_type: 'saved_food', saved_food_id: f.id })}
         />
       ))}
     </div>
   );
 }
 
-function RecipeList({ onPick, showMacros }) {
+function RecipeList({ onPick, q }) {
   const { items: recipes } = useRecipes();
-  const list = (recipes || []).filter((r) => recipePerServing(r));
-  if (list.length === 0) return <p className="text-xs text-muted-foreground text-center py-6">No recipes with nutrition yet — add nutrition on a recipe.</p>;
+  const list = (recipes || []).filter((r) => recipePerServing(r) && matchQ(r.name, q));
+  if (list.length === 0) return <p className="text-xs text-muted-foreground text-center py-6">{q ? 'No matches.' : 'No recipes with nutrition yet — add nutrition on a recipe.'}</p>;
   return (
     <div className="space-y-2">
       {list.map((r) => {
         const nut = recipePerServing(r);
+        return <Row key={r.id} name={r.name} sub={`${fmtNut(nut.calories)} cal / serving`}
+          onPick={() => onPick({ name: r.name, perServingNut: nut, servings: 1, source_type: 'recipe', recipe_id: r.id })}
+        />;
+      })}
+    </div>
+  );
+}
+
+function MealPrepList({ onPick, q }) {
+  const { items: sessions } = useMealPrepSessions();
+  const { items: recipes } = useRecipes();
+  const active = (sessions || []).filter((s) => s.status !== 'completed' || (s.items || []).some((it) => it.recipe_id));
+  const list = active.filter((s) => matchQ(s.name, q) || (s.items || []).some((it) => {
+    const r = recipes.find((r) => r.id === it.recipe_id);
+    return r && matchQ(r.name, q);
+  }));
+  if (list.length === 0) return <p className="text-xs text-muted-foreground text-center py-6">{q ? 'No matches.' : 'No meal prep sessions with recipes yet.'}</p>;
+  return (
+    <div className="space-y-2">
+      {list.flatMap((s) =>
+        (s.items || []).filter((it) => it.recipe_id).map((it, i) => {
+          const r = recipes.find((r) => r.id === it.recipe_id);
+          if (!r) return null;
+          const nut = recipePerServing(r);
+          if (!nut) return null;
+          return (
+            <Row key={`${s.id}-${i}`} name={r.name} sub={`${fmtNut(nut.calories)} cal / serving · ${s.name}`}
+              onPick={() => onPick({ name: r.name, perServingNut: nut, servings: 1, source_type: 'meal_prep', prep_session_id: s.id })}
+            />
+          );
+        }).filter(Boolean)
+      )}
+    </div>
+  );
+}
+
+function LeftoverList({ onPick, q }) {
+  const { items: leftovers } = useLeftovers();
+  const { items: recipes } = useRecipes();
+  const list = (leftovers || []).filter((l) => l.status === 'available' && matchQ(l.name, q));
+  if (list.length === 0) return <p className="text-xs text-muted-foreground text-center py-6">{q ? 'No matches.' : 'No available leftovers.'}</p>;
+  return (
+    <div className="space-y-2">
+      {list.map((l) => {
+        const rec = l.source_recipe_id ? recipes.find((r) => r.id === l.source_recipe_id) : null;
+        const nut = rec ? recipePerServing(rec) : null;
         return (
-          <Row
-            key={r.id}
-            name={r.name}
-            sub={`${fmtNut(nut.calories)} cal / serving`}
+          <Row key={l.id} name={l.name} sub={nut ? `${fmtNut(nut.calories)} cal / serving` : 'Log manually'}
             onPick={() => onPick({
-              name: r.name,
-              perServingNut: nut,
+              name: l.name,
+              perServingNut: nut || { calories: 0, protein: 0, carbs: 0, fat: 0 },
               servings: 1,
-              source_type: 'recipe',
-              recipe_id: r.id,
+              source_type: 'leftover',
+              leftover_id: l.id,
             })}
           />
         );
@@ -318,27 +361,21 @@ function CustomEntry({ onPick, showMacros }) {
   const valid = f.name.trim() && (f.calories || f.protein || f.carbs || f.fat);
   return (
     <div className="space-y-2">
-      <Input value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="Food name" className="rounded-2xl" />
+      <Input value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="Food name" className="rounded-2xl" autoFocus />
       <div className="grid grid-cols-4 gap-2">
         <Input type="number" value={f.calories} onChange={(e) => set('calories', e.target.value)} placeholder="cal" className="rounded-2xl" />
-        {showMacros && (
-          <>
-            <Input type="number" value={f.protein} onChange={(e) => set('protein', e.target.value)} placeholder="P g" className="rounded-2xl" />
-            <Input type="number" value={f.carbs} onChange={(e) => set('carbs', e.target.value)} placeholder="C g" className="rounded-2xl" />
-            <Input type="number" value={f.fat} onChange={(e) => set('fat', e.target.value)} placeholder="F g" className="rounded-2xl" />
-          </>
-        )}
+        {showMacros && <>
+          <Input type="number" value={f.protein} onChange={(e) => set('protein', e.target.value)} placeholder="P g" className="rounded-2xl" />
+          <Input type="number" value={f.carbs} onChange={(e) => set('carbs', e.target.value)} placeholder="C g" className="rounded-2xl" />
+          <Input type="number" value={f.fat} onChange={(e) => set('fat', e.target.value)} placeholder="F g" className="rounded-2xl" />
+        </>}
       </div>
-      <Button
-        className="rounded-full w-full"
-        disabled={!valid}
+      <Button className="rounded-full w-full" disabled={!valid}
         onClick={() => onPick({
           name: f.name,
           perServingNut: { calories: +f.calories || 0, protein: +f.protein || 0, carbs: +f.carbs || 0, fat: +f.fat || 0 },
-          servings: 1,
-          source_type: 'custom',
-        })}
-      >
+          servings: 1, source_type: 'custom',
+        })}>
         Continue
       </Button>
     </div>

@@ -3,27 +3,34 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Plus, Trash2, Copy, Sparkles, Save, Pencil } from 'lucide-react';
-import EmptyState from '@/components/EmptyState';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+import { Plus, Trash2, Copy, Sparkles, Save, Pencil, MoreHorizontal, CalendarDays, ShoppingCart, ChefHat, ChevronRight } from 'lucide-react';
+import KitchenEmptyState from '@/components/kitchen/ui/KitchenEmptyState';
+import KitchenSection from '@/components/kitchen/ui/KitchenSection';
+import StatusChip from '@/components/kitchen/ui/StatusChip';
 import { useKitchenTemplates, useRecipes } from '@/hooks/useKitchen';
 import { useAppSettings } from '@/lib/AppSettings';
-import { GROCERY_CATEGORIES, MEAL_SLOTS, DAY_OF_WEEK, FORTNIGHT_DAYS, EMPTY_TEMPLATES } from '@/components/kitchen/kitchenConstants';
+import { GROCERY_CATEGORIES, MEAL_SLOTS, FORTNIGHT_DAYS, EMPTY_TEMPLATES } from '@/components/kitchen/kitchenConstants';
 import ApplyGroceryTemplateSheet from '@/components/kitchen/template/ApplyGroceryTemplateSheet';
 import ApplyMealPlanTemplateSheet from '@/components/kitchen/template/ApplyMealPlanTemplateSheet';
+import { cn } from '@/lib/utils';
 
 const KINDS = [
-  { value: 'meal-plan', label: 'Meal Plans', feat: 'kit.mealTemplates' },
-  { value: 'grocery', label: 'Grocery Lists', feat: 'kit.groceryTemplates' },
-  { value: 'meal-prep', label: 'Meal Prep', feat: 'kit.prepTemplates' },
+  { value: 'meal-plan', label: 'Meal Plans', icon: CalendarDays, feat: 'kit.mealTemplates' },
+  { value: 'grocery', label: 'Grocery Lists', icon: ShoppingCart, feat: 'kit.groceryTemplates' },
+  { value: 'meal-prep', label: 'Meal Prep', icon: ChefHat, feat: 'kit.prepTemplates' },
 ];
 
 export default function TemplatesView({ onBack }) {
   const { isFeatureEnabled } = useAppSettings();
   const kinds = KINDS.filter((k) => isFeatureEnabled(k.feat));
   const [kind, setKind] = useState(kinds[0]?.value || 'meal-plan');
-  const [editing, setEditing] = useState(null); // {record} | 'new'
+  const [editing, setEditing] = useState(null);
   const [applyGrocery, setApplyGrocery] = useState(null);
   const [applyMealPlan, setApplyMealPlan] = useState(null);
+  const [preview, setPreview] = useState(null);
   const { items, add, update, remove } = useKitchenTemplates(kind);
   const { items: recipes } = useRecipes();
 
@@ -35,53 +42,93 @@ export default function TemplatesView({ onBack }) {
     setEditing(null);
   };
 
+  const templateStats = (t) => {
+    if (kind === 'grocery') return { stat: `${(t.items || []).length} items`, sub: t.description };
+    if (kind === 'meal-plan') {
+      const meals = t.meals || [];
+      const isFortnight = meals.some((m) => m.day_of_week >= 7);
+      const dinners = meals.filter((m) => m.meal_slot === 'dinner').length;
+      return { stat: `${dinners} planned dinners`, sub: isFortnight ? '14-day meal plan' : '7-day meal plan' };
+    }
+    const items = t.prep_items || [];
+    const tasks = t.prep_tasks || [];
+    return { stat: `${items.length} recipes · ${tasks.length} tasks`, sub: t.description };
+  };
+
+  const KindIcon = KINDS.find((k) => k.value === kind)?.icon || Sparkles;
+
   return (
     <div className="space-y-4 pb-8">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={onBack} className="rounded-full">←</Button>
         <h2 className="font-heading text-lg font-semibold flex-1">Templates</h2>
         <Button size="sm" className="rounded-full" onClick={startNew}><Plus className="w-4 h-4 mr-1" /> New</Button>
       </div>
 
+      {/* Kind selector */}
       <div className="flex gap-1 p-1 bg-secondary rounded-full">
-        {kinds.map((k) => (
-          <button key={k.value} onClick={() => setKind(k.value)} className={`flex-1 text-xs py-1.5 rounded-full ${kind === k.value ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}>{k.label}</button>
-        ))}
+        {kinds.map((k) => {
+          const Icon = k.icon;
+          return (
+            <button key={k.value} onClick={() => setKind(k.value)}
+              className={cn('flex-1 flex items-center justify-center gap-1.5 text-xs py-1.5 rounded-full transition',
+                kind === k.value ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground')}>
+              <Icon className="w-4 h-4" /> {k.label}
+            </button>
+          );
+        })}
       </div>
 
       {items.length === 0 ? (
-        <EmptyState icon={Sparkles} title={EMPTY_TEMPLATES[kind]?.title} subtitle={EMPTY_TEMPLATES[kind]?.subtitle} />
+        <KitchenEmptyState icon={KindIcon} title={EMPTY_TEMPLATES[kind]?.title} subtitle={EMPTY_TEMPLATES[kind]?.subtitle}
+          actionLabel="Create template" onAction={startNew} />
       ) : (
-        <div className="space-y-2">
-          {items.map((t) => (
-            <div key={t.id} className="rounded-3xl border bg-card p-3">
-              <div className="flex items-center gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{t.name}</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {kind === 'grocery' ? `${(t.items || []).length} items` : kind === 'meal-plan' ? `${(t.meals || []).length} meals` : `${(t.prep_items || []).length} items`}
-                    {t.description ? ` · ${t.description}` : ''}
-                  </p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {items.map((t) => {
+            const stats = templateStats(t);
+            return (
+              <div key={t.id} className="rounded-3xl border border-border/60 bg-card p-4 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-heading text-sm font-semibold truncate">{t.name}</p>
+                    {stats.sub && <p className="text-[11px] text-muted-foreground">{stats.sub}</p>}
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label="More actions"><MoreHorizontal className="w-4 h-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setEditing({ record: t })}><Pencil className="w-4 h-4 mr-2" /> Edit</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => add({ ...stripIds(t), name: `${t.name} (copy)` })}><Copy className="w-4 h-4 mr-2" /> Duplicate</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => remove(t.id)} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" /> Delete</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <p className="text-xs text-muted-foreground">{stats.stat}</p>
+                {kind === 'meal-plan' && (t.meals || []).some((m) => m.day_of_week >= 7) && (
+                  <div className="flex gap-2">
+                    <StatusChip variant="neutral">Week 1</StatusChip>
+                    <StatusChip variant="warm">Week 2</StatusChip>
+                  </div>
+                )}
+                <div className="flex gap-1.5 pt-1">
+                  {kind === 'grocery' && <Button size="sm" className="rounded-full h-7 text-xs" onClick={() => setApplyGrocery(t)}>Apply</Button>}
+                  {kind === 'meal-plan' && <>
+                    <Button size="sm" className="rounded-full h-7 text-xs" onClick={() => setApplyMealPlan(t)}>Use</Button>
+                    <Button size="sm" variant="outline" className="rounded-full h-7 text-xs" onClick={() => setPreview(t)}>Preview</Button>
+                  </>}
+                  {kind === 'meal-prep' && <Button size="sm" className="rounded-full h-7 text-xs" onClick={() => applyMealPrep(t)}>Use</Button>}
+                  <Button size="sm" variant="ghost" className="rounded-full h-7 text-xs" onClick={() => setEditing({ record: t })}><Pencil className="w-3 h-3 mr-0.5" /> Edit</Button>
                 </div>
               </div>
-              <div className="flex gap-1.5 mt-2 flex-wrap">
-                {kind === 'grocery' && <Button size="sm" className="rounded-full h-7 text-xs" onClick={() => setApplyGrocery(t)}>Apply</Button>}
-                {kind === 'meal-plan' && <Button size="sm" className="rounded-full h-7 text-xs" onClick={() => setApplyMealPlan(t)}>Apply</Button>}
-                {kind === 'meal-prep' && <Button size="sm" className="rounded-full h-7 text-xs" onClick={() => applyMealPrep(t)}>Use</Button>}
-                <Button size="sm" variant="outline" className="rounded-full h-7 text-xs" onClick={() => setEditing({ record: t })}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
-                <Button size="sm" variant="ghost" className="rounded-full h-7 text-xs" onClick={() => add({ ...stripIds(t), name: `${t.name} (copy)` })}><Copy className="w-3 h-3 mr-1" /> Duplicate</Button>
-                <Button size="sm" variant="ghost" className="rounded-full h-7 text-xs" onClick={() => remove(t.id)}><Trash2 className="w-3 h-3 text-muted-foreground" /></Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {editing && (
-        <TemplateEditor template={editing.record} recipes={recipes} recipeName={recipeName} onSave={save} onCancel={() => setEditing(null)} />
-      )}
+      {editing && <TemplateEditor template={editing.record} recipes={recipes} recipeName={recipeName} onSave={save} onCancel={() => setEditing(null)} />}
       <ApplyGroceryTemplateSheet template={applyGrocery} onClose={() => setApplyGrocery(null)} />
       <ApplyMealPlanTemplateSheet template={applyMealPlan} recipes={recipes} recipeName={recipeName} onClose={() => setApplyMealPlan(null)} />
+      {preview && <TemplatePreview template={preview} recipeName={recipeName} onClose={() => setPreview(null)} />}
     </div>
   );
 }
@@ -99,18 +146,49 @@ async function applyMealPrep(template) {
   });
 }
 
+function TemplatePreview({ template, recipeName, onClose }) {
+  const meals = template.meals || [];
+  const w1 = meals.filter((m) => m.day_of_week < 7);
+  const w2 = meals.filter((m) => m.day_of_week >= 7);
+  return (
+    <Sheet open onOpenChange={(o) => !o && onClose()}>
+      <SheetContent side="bottom" className="rounded-t-3xl pb-8 max-h-[90vh] overflow-y-auto">
+        <SheetHeader className="text-center"><SheetTitle className="font-heading">{template.name}</SheetTitle></SheetHeader>
+        <div className="mt-4 space-y-4">
+          {[{ label: 'Week 1', meals: w1 }, { label: 'Week 2', meals: w2 }].filter((w) => w.meals.length > 0).map((w) => (
+            <div key={w.label}>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">{w.label}</p>
+              <div className="space-y-1.5">
+                {w.meals.map((m, i) => (
+                  <div key={i} className="flex items-center justify-between text-sm py-1.5 border-b border-border/30 last:border-0">
+                    <div>
+                      <p className="text-[11px] text-muted-foreground">{FORTNIGHT_DAYS[m.day_of_week]?.label || `Day ${m.day_of_week + 1}`}</p>
+                      <p>{m.meal_type === 'recipe' ? recipeName(m.recipe_id) : m.custom_name || 'Open'}</p>
+                    </div>
+                    <span className="text-[11px] text-muted-foreground capitalize">{m.meal_slot}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          {meals.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">No meals in this template yet.</p>}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 function TemplateEditor({ template, recipes, recipeName, onSave, onCancel }) {
   const [t, setT] = useState({ ...template });
   const set = (k, v) => setT((p) => ({ ...p, [k]: v }));
   const kind = t.kind;
-  const recipeOpt = (val) => <option value="">—</option> || null;
 
   return (
     <Sheet open onOpenChange={(o) => !o && onCancel()}>
       <SheetContent side="bottom" className="rounded-t-3xl pb-8 max-h-[90vh] overflow-y-auto">
         <SheetHeader className="text-center"><SheetTitle className="font-heading">{t.id ? 'Edit template' : 'New template'}</SheetTitle></SheetHeader>
         <div className="space-y-3 mt-4">
-          <Input value={t.name} onChange={(e) => set('name', e.target.value)} placeholder="Template name" className="rounded-2xl" />
+          <Input value={t.name} onChange={(e) => set('name', e.target.value)} placeholder="Template name" className="rounded-2xl" autoFocus />
           <Input value={t.description || ''} onChange={(e) => set('description', e.target.value)} placeholder="Description (optional)" className="rounded-2xl" />
 
           {kind === 'grocery' && <GroceryTemplateEditor t={t} set={set} />}

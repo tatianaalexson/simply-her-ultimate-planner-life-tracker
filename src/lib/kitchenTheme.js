@@ -8,15 +8,15 @@ import { useAppSettings } from '@/lib/AppSettings';
 
 const PERSONALITIES = {
   'soft-clean':     { personality: 'botanical', motif: '🌿', tone: 'calm' },
-  'pink-glam':     { personality: 'romantic',  motif: '🌸', tone: 'soft' },
-  'baby-blue':     { personality: 'cloud',      motif: '☁️', tone: 'airy' },
-  'butter-yellow': { personality: 'sunshine',  motif: '🐝', tone: 'warm' },
-  'lavender':      { personality: 'romantic',  motif: '💜', tone: 'soft' },
-  'whimsigoth':    { personality: 'elegant',   motif: '🌙', tone: 'dark' },
-  'dark-academia': { personality: 'elegant',   motif: '📜', tone: 'dark' },
-  'noir':          { personality: 'minimal',   motif: '✦',  tone: 'dark' },
-  'matcha':        { personality: 'botanical',  motif: '🍃', tone: 'calm' },
-  'cozy-autumn':   { personality: 'harvest',   motif: '🍂', tone: 'warm' },
+  'pink-glam':      { personality: 'romantic',  motif: '🌸', tone: 'soft' },
+  'baby-blue':      { personality: 'cloud',     motif: '☁️', tone: 'airy' },
+  'butter-yellow':  { personality: 'sunshine',  motif: '🐝', tone: 'warm' },
+  'lavender':       { personality: 'romantic',  motif: '💜', tone: 'soft' },
+  'whimsigoth':     { personality: 'elegant',    motif: '🌙', tone: 'dark' },
+  'dark-academia':  { personality: 'elegant',    motif: '📜', tone: 'dark' },
+  'noir':           { personality: 'minimal',    motif: '✦',  tone: 'dark' },
+  'matcha':         { personality: 'botanical',  motif: '🍃', tone: 'calm' },
+  'cozy-autumn':    { personality: 'harvest',   motif: '🍂', tone: 'warm' },
 };
 
 const DEFAULT_PERSONALITY = { personality: 'botanical', motif: '🌿', tone: 'calm' };
@@ -26,6 +26,8 @@ export function getKitchenTheme(themeId) {
 }
 
 // Section-specific decorative motifs for empty states and placeholders.
+// These are subtle ACCENTS only — components should always use a Lucide icon
+// as the primary visual, with the motif emoji as a small corner flourish.
 const SECTION_MOTIFS = {
   groceries: '🛒',
   shopping: '✓',
@@ -37,6 +39,13 @@ const SECTION_MOTIFS = {
   nutrition: '🥗',
   recipes: '📖',
   mealplan: '📅',
+  occasions: '🎉',
+  templates: '📋',
+  equipment: '🍳',
+  savedfoods: '⭐',
+  diary: '📝',
+  goals: '🎯',
+  history: '📊',
 };
 
 export function getSectionMotif(section) {

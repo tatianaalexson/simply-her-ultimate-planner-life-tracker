@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useAppSettings } from '@/lib/AppSettings';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Plus, ChevronLeft, ChevronRight, Trash2, Utensils } from 'lucide-react';
 import { useNutritionDay, useNutritionGoals } from '@/hooks/useNutrition';
@@ -48,14 +49,9 @@ export default function NutritionView({ onBack }) {
 
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={cn(
-              'text-xs px-3 py-1.5 rounded-full whitespace-nowrap transition',
-              tab === t.id ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-            )}
-          >
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={cn('text-xs px-3 py-1.5 rounded-full whitespace-nowrap transition',
+              tab === t.id ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80')}>
             {t.label}
           </button>
         ))}
@@ -85,21 +81,26 @@ function TodayView({ date, onOpenLog, onSeeDiary }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-3xl border border-border/60 bg-card p-5 space-y-2">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Calories · {fmtDate(date)}</p>
+      {/* Primary summary */}
+      <div className="rounded-3xl border border-border/60 bg-card p-5 space-y-3">
         <div className="flex items-baseline justify-between">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Calories · {fmtDate(date)}</p>
+          {calGoal > 0 && <p className="text-[10px] text-muted-foreground">{Math.round(calPct)}%</p>}
+        </div>
+        <div className="flex items-baseline gap-1">
           <p className="font-heading text-3xl font-semibold">{fmtNut(totals.calories)}</p>
           <p className="text-sm text-muted-foreground">/ {calGoal || '—'} kcal</p>
         </div>
-        <Progress value={calPct} className="h-2" />
+        {calGoal > 0 && <Progress value={calPct} className="h-1.5" />}
         {showMacros && (
           <div className="grid grid-cols-3 gap-2 pt-1">
             {MACRO_FIELDS.map((m) => {
               const goal = goals?.[`${m.key}_goal`] || 0;
+              const val = totals[m.key];
               return (
                 <div key={m.key} className="rounded-2xl bg-secondary/40 p-2.5">
                   <p className="text-[11px] text-muted-foreground">{m.label}</p>
-                  <p className="text-sm font-medium">{fmtNut(totals[m.key], m.unit)}<span className="text-muted-foreground">/{goal || '—'}{m.unit}</span></p>
+                  <p className="text-sm font-medium">{fmtNut(val, m.unit)}<span className="text-muted-foreground text-[10px]">/{goal || '—'}{m.unit}</span></p>
                 </div>
               );
             })}
@@ -107,18 +108,22 @@ function TodayView({ date, onOpenLog, onSeeDiary }) {
         )}
       </div>
 
+      {/* Meals logged */}
       <div className="rounded-3xl border border-border/60 bg-card p-4">
         <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Meals logged</p>
         {slotsLogged.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nothing logged yet today.</p>
+          <div className="text-center py-4">
+            <p className="text-sm text-muted-foreground mb-3">Nothing logged yet today.</p>
+            <Button size="sm" className="rounded-full" onClick={() => onOpenLog(null)}><Plus className="w-4 h-4 mr-1" /> Log food</Button>
+          </div>
         ) : (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {slotsLogged.map((s) => {
               const slotTotals = sumEntries(groups[s.id]);
               return (
                 <div key={s.id} className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{s.label}</span>
-                  <span className="font-medium">{fmtNut(slotTotals.calories)} cal</span>
+                  <span className="font-medium">{fmtNut(slotTotals.calories)} cal{showMacros ? ` · ${fmtNut(slotTotals.protein, 'g')} protein` : ''}</span>
                 </div>
               );
             })}
@@ -135,43 +140,67 @@ function TodayView({ date, onOpenLog, onSeeDiary }) {
 }
 
 function DiaryView({ date, setDate, onOpenLog }) {
+  const { isFeatureEnabled } = useAppSettings();
+  const showMacros = isFeatureEnabled('kit.macros');
   const { items, remove } = useNutritionDay(date);
   const groups = groupBySlot(items);
+  const totals = sumEntries(items);
+  const isToday = date === todayStr();
 
   return (
     <div className="space-y-4">
+      {/* Date navigation */}
       <div className="flex items-center justify-between">
         <button onClick={() => setDate(shift(date, -1))} className="p-2 rounded-full hover:bg-secondary"><ChevronLeft className="w-4 h-4" /></button>
-        <button onClick={() => setDate(todayStr())} className="text-sm font-medium">{fmtDate(date)}{date === todayStr() ? '' : ''}</button>
+        <button onClick={() => setDate(todayStr())} className="text-sm font-medium">
+          {isToday ? 'Today' : fmtDate(date)}
+        </button>
         <button onClick={() => setDate(shift(date, 1))} className="p-2 rounded-full hover:bg-secondary"><ChevronRight className="w-4 h-4" /></button>
       </div>
 
+      {/* Meal groups */}
       {NUTRITION_SLOTS.map((s) => {
         const entries = groups[s.id] || [];
         const slotTotals = sumEntries(entries);
         return (
-          <div key={s.id} className="rounded-3xl border border-border/60 bg-card p-4 space-y-2">
+          <div key={s.id} className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <p className="font-heading text-sm font-medium">{s.label}</p>
-              <span className="text-[11px] text-muted-foreground">{entries.length ? `${fmtNut(slotTotals.calories)} cal` : 'Open'}</span>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{s.label}</p>
+              {entries.length > 0 && <span className="text-[11px] text-muted-foreground">{fmtNut(slotTotals.calories)} cal{showMacros ? ` · ${fmtNut(slotTotals.protein, 'g')} protein` : ''}</span>}
             </div>
-            {entries.map((e) => (
-              <div key={e.id} className="flex items-center justify-between gap-2 border-t border-border pt-2 first:border-0 first:pt-0">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{e.name}</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {fmtNut(e.calories)} cal{e.servings && e.servings !== 1 ? ` · ${e.servings}×` : ''}
-                  </p>
-                </div>
-                <button onClick={() => remove(e.id)} className="text-muted-foreground shrink-0 p-1"><Trash2 className="w-3.5 h-3.5" /></button>
+            {entries.length === 0 ? (
+              <p className="text-sm text-muted-foreground/60 italic py-1">Nothing logged yet.</p>
+            ) : (
+              <div className="space-y-1">
+                {entries.map((e) => (
+                  <div key={e.id} className="flex items-center justify-between gap-2 py-1.5 border-b border-border/30 last:border-0">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm truncate">{e.name}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {fmtNut(e.calories)} cal
+                        {showMacros ? ` · ${fmtNut(e.protein, 'g')} protein` : ''}
+                        {e.servings && e.servings !== 1 ? ` · ${e.servings}×` : ''}
+                      </p>
+                    </div>
+                    <button onClick={() => remove(e.id)} className="text-muted-foreground/60 shrink-0 p-1 hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
+                ))}
               </div>
-            ))}
-            <button onClick={() => onOpenLog({ slot: s.id, date })} className="text-xs text-primary inline-flex items-center gap-1 pt-1">
-              <Plus className="w-3 h-3" /> Add to {s.label.toLowerCase()}
+            )}
+            <button onClick={() => onOpenLog({ slot: s.id, date })} className="text-xs text-primary inline-flex items-center gap-1 pt-0.5">
+              <Plus className="w-3 h-3" /> Add food
             </button>
           </div>
         );
       })}
+
+      {/* Daily totals */}
+      {items.length > 0 && (
+        <div className="rounded-2xl bg-secondary/30 p-4 space-y-1">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Today</p>
+          <p className="text-sm font-medium">{fmtNut(totals.calories)} kcal{showMacros ? ` · ${fmtNut(totals.protein, 'g')} protein · ${fmtNut(totals.carbs, 'g')} carbs · ${fmtNut(totals.fat, 'g')} fat` : ''}</p>
+        </div>
+      )}
     </div>
   );
 }
