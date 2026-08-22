@@ -134,10 +134,12 @@ export default function InventoryView({ zone, onBack, onNavigate }) {
               <div className="rounded-2xl border border-border/40 bg-card overflow-hidden">
                 {useSoonItems.map((i) => (
                   <InventoryRow key={i.id} item={i} isUseSoon={isUseSoon(i)} isLow={isLow(i)}
-                    onAdjust={(d) => adjustQty(i, d)} onMenu={() => {}} onMove={() => setMoveItem(i)}
-                    onAdjustSheet={() => { setAdjustItem(i); }} onUsedUp={() => update(i.id, { status: 'used_up' })}
-                    onRestore={() => update(i.id, { status: 'available' })}
-                    onRemove={() => remove(i.id)} />
+                    onAdjust={(d) => adjustQty(i, d)} onMenu={() => {}}
+                    onMove={() => setMoveItem(i)} onAdjustSheet={() => setAdjustItem(i)}
+                    onUsedUp={() => { update(i.id, { status: 'used_up' }); logInventoryEvent(i.id, 'used_up', { itemName: i.name }); }}
+                    onRestore={() => { update(i.id, { status: 'available' }); logInventoryEvent(i.id, 'restored', { itemName: i.name }); }}
+                    onRemove={() => remove(i.id)}
+                    showHistory={isFeatureEnabled('kit.foodHistory')} onHistory={() => setHistoryItem(i)} />
                 ))}
               </div>
             </KitchenSection>

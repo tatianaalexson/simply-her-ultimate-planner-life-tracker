@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Image } from '@/components/ui/image';
 import {
   Coffee, Sandwich, Utensils, Cookie, CakeSlice, ChefHat,
@@ -26,14 +26,15 @@ const CATEGORY_ICONS = {
 export default function RecipePhoto({ recipe, className, height = 'h-40' }) {
   const { motif } = useKitchenTheme();
   const cat = recipe?.category || 'other';
+  const [imgError, setImgError] = useState(false);
 
-  if (recipe?.photo_url) {
+  if (recipe?.photo_url && !imgError) {
     return (
-      <Image
+      <img
         src={recipe.photo_url}
         alt={recipe.name || 'Recipe'}
-        fittingType="fill"
-        className={cn('w-full block', height, className)}
+        onError={() => setImgError(true)}
+        className={cn('w-full block object-cover', height, className)}
       />
     );
   }

@@ -4,9 +4,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown, Star, Heart, Save,
+  ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown, Star, Heart, Save, Upload, Loader2,
 } from 'lucide-react';
 import { RECIPE_CATEGORIES, DIFFICULTY } from '@/components/kitchen/kitchenConstants';
+import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
 
 const emptyIngredient = { qty: '', unit: '', name: '', prep: '', optional: false, section: '' };
@@ -48,6 +49,21 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
   const addSub = () => setF((p) => ({ ...p, substitutions: [...(p.substitutions || []), { original: '', substitute: '', ratio: '', instructions: '', notes: '' }] }));
   const delSub = (i) => setF((p) => ({ ...p, substitutions: (p.substitutions || []).filter((_, j) => j !== i) }));
 
+  const [uploading, setUploading] = useState(false);
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      set('photo_url', file_url);
+    } catch {
+      /* upload failed — keep existing url */
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const submit = () => {
     if (!f.name?.trim()) return;
     onSave({
@@ -70,7 +86,15 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
       {/* BASICS */}
       <FormSection title="Basics">
         <Input value={f.name} onChange={(e) => set('name', e.target.value)} placeholder="Recipe name" className="rounded-2xl text-base" autoFocus />
-        <Input value={f.photo_url} onChange={(e) => set('photo_url', e.target.value)} placeholder="Photo URL" className="rounded-2xl" />
+        <div className="flex gap-2">
+          <Input value={f.photo_url} onChange={(e) => set('photo_url', e.target.value)} placeholder="Photo URL" className="rounded-2xl flex-1" />
+          <label className="cursor-pointer">
+            <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploading} />
+            <span className="inline-flex items-center justify-center h-9 px-3 rounded-2xl border border-input bg-card text-sm text-muted-foreground hover:bg-accent transition">
+              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            </span>
+          </label>
+        </div>
         <Textarea value={f.description} onChange={(e) => set('description', e.target.value)} placeholder="Short description" className="rounded-2xl" />
         <div className="grid grid-cols-2 gap-2">
           <Input value={f.source} onChange={(e) => set('source', e.target.value)} placeholder="Source (e.g. Grandma, BBC Good Food)" className="rounded-2xl" />
