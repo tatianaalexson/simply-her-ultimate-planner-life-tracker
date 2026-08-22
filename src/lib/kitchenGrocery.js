@@ -274,3 +274,5 @@ export function resolveAmount(item) {
 export function formatQuantity(n) {
   return formatQty(n);
 }
+
+export { unitsCompatible, sumAmounts, parseQty, formatQty };

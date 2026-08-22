@@ -6,13 +6,15 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import {
-  Plus, Trash2, Search, Minus, Move, MoreHorizontal, Box, Refrigerator, Snowflake, Pencil,
+  Plus, Trash2, Search, Minus, Move, MoreHorizontal, Box, Refrigerator, Snowflake, Pencil, History,
 } from 'lucide-react';
 import KitchenEmptyState from '@/components/kitchen/ui/KitchenEmptyState';
 import KitchenSection from '@/components/kitchen/ui/KitchenSection';
 import StatusChip from '@/components/kitchen/ui/StatusChip';
+import InventoryHistorySheet from '@/components/kitchen/InventoryHistorySheet';
 import { useInventory } from '@/hooks/useKitchen';
 import { useAppSettings } from '@/lib/AppSettings';
+import { logInventoryEvent, classifyQtyChange } from '@/lib/inventoryHistory';
 import { GROCERY_CATEGORIES, EMPTY, todayStr, fmtDate } from '@/components/kitchen/kitchenConstants';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +35,7 @@ export default function InventoryView({ zone, onBack, onNavigate }) {
   const [showAdd, setShowAdd] = useState(false);
   const [moveItem, setMoveItem] = useState(null);
   const [adjustItem, setAdjustItem] = useState(null);
+  const [historyItem, setHistoryItem] = useState(null);
 
   const isUseSoon = (i) => {
     if (!i.best_before && !i.expiration) return false;
@@ -58,6 +61,17 @@ export default function InventoryView({ zone, onBack, onNavigate }) {
     const cur = i.amount || parseFloat(i.qty) || 0;
     const next = Math.max(0, cur + delta);
     update(i.id, { amount: next, qty: String(next) });
+    if (delta !== 0) {
+      logInventoryEvent(i.id, delta > 0 ? 'qty_increased' : 'qty_decreased', { fromAmount: cur, toAmount: next, unit: i.unit, itemName: i.name });
+    }
+  };
+
+  const addWithHistory = async (data) => {
+    const rec = await add(data);
+    if (rec?.id) {
+      logInventoryEvent(rec.id, 'added', { toAmount: data.amount, unit: data.unit, itemName: data.name, toZone: data.zone });
+    }
+    return rec;
   };
 
   const availableZones = ZONES.filter((z) => isFeatureEnabled(z.feat));
@@ -138,9 +152,10 @@ export default function InventoryView({ zone, onBack, onNavigate }) {
                   <InventoryRow key={i.id} item={i} isUseSoon={isUseSoon(i)} isLow={isLow(i)}
                     onAdjust={(d) => adjustQty(i, d)} onMenu={() => {}}
                     onMove={() => setMoveItem(i)} onAdjustSheet={() => setAdjustItem(i)}
-                    onUsedUp={() => update(i.id, { status: 'used_up' })}
-                    onRestore={() => update(i.id, { status: 'available' })}
-                    onRemove={() => remove(i.id)} />
+                    onUsedUp={() => { update(i.id, { status: 'used_up' }); logInventoryEvent(i.id, 'used_up', { itemName: i.name }); }}
+                    onRestore={() => { update(i.id, { status: 'available' }); logInventoryEvent(i.id, 'restored', { itemName: i.name }); }}
+                    onRemove={() => remove(i.id)}
+                    showHistory={isFeatureEnabled('kit.foodHistory')} onHistory={() => setHistoryItem(i)} />
                 ))}
               </div>
             </div>
@@ -148,14 +163,29 @@ export default function InventoryView({ zone, onBack, onNavigate }) {
         </div>
       )}
 
-      <AddItemSheet open={showAdd} onOpenChange={setShowAdd} zone={zone} onAdd={add} />
-      <MoveSheet item={moveItem} zone={zone} onClose={() => setMoveItem(null)} onMove={(z, loc) => { update(moveItem.id, { zone: z, storage_location: loc || moveItem.storage_location }); setMoveItem(null); }} />
-      <AdjustSheet item={adjustItem} onClose={() => setAdjustItem(null)} onSave={(v) => { update(adjustItem.id, { amount: v, qty: String(v) }); setAdjustItem(null); }} />
+      <AddItemSheet open={showAdd} onOpenChange={setShowAdd} zone={zone} onAdd={addWithHistory} />
+      <MoveSheet item={moveItem} zone={zone} onClose={() => setMoveItem(null)} onMove={(z, loc) => {
+        const fromZone = moveItem.zone;
+        update(moveItem.id, { zone: z, storage_location: loc || moveItem.storage_location });
+        if (fromZone !== z) {
+          logInventoryEvent(moveItem.id, 'moved', { fromZone, toZone: z, itemName: moveItem.name });
+        } else if (loc !== moveItem.storage_location) {
+          logInventoryEvent(moveItem.id, 'storage_changed', { storageLocation: loc, itemName: moveItem.name });
+        }
+        setMoveItem(null);
+      }} />
+      <AdjustSheet item={adjustItem} onClose={() => setAdjustItem(null)} onSave={(v) => {
+        const old = adjustItem.amount || parseFloat(adjustItem.qty) || 0;
+        update(adjustItem.id, { amount: v, qty: String(v) });
+        logInventoryEvent(adjustItem.id, classifyQtyChange(old, v), { fromAmount: old, toAmount: v, unit: adjustItem.unit, itemName: adjustItem.name });
+        setAdjustItem(null);
+      }} />
+      <InventoryHistorySheet open={!!historyItem} onOpenChange={(o) => !o && setHistoryItem(null)} itemId={historyItem?.id} itemName={historyItem?.name} />
     </div>
   );
 }
 
-function InventoryRow({ item, isUseSoon, isLow, onAdjust, onMove, onAdjustSheet, onUsedUp, onRestore, onRemove }) {
+function InventoryRow({ item, isUseSoon, isLow, onAdjust, onMove, onAdjustSheet, onUsedUp, onRestore, onRemove, showHistory, onHistory }) {
   return (
     <div className={cn('flex items-center gap-3 px-3 py-2.5 border-b border-border/30 last:border-0', item.status !== 'available' && 'opacity-50')}>
       <div className="flex-1 min-w-0">
@@ -181,6 +211,7 @@ function InventoryRow({ item, isUseSoon, isLow, onAdjust, onMove, onAdjustSheet,
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onAdjustSheet}><Pencil className="w-4 h-4 mr-2" /> Set amount</DropdownMenuItem>
           <DropdownMenuItem onClick={onMove}><Move className="w-4 h-4 mr-2" /> Move</DropdownMenuItem>
+          {showHistory && <DropdownMenuItem onClick={onHistory}><History className="w-4 h-4 mr-2" /> View History</DropdownMenuItem>}
           {item.status === 'available' ? (
             <DropdownMenuItem onClick={onUsedUp}>Mark used up</DropdownMenuItem>
           ) : (

@@ -5,13 +5,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
-  ArrowLeft, Plus, Trash2, ShoppingCart, ChefHat, Save, Utensils, Clock, Pencil, ChevronRight,
+  ArrowLeft, Plus, Trash2, ShoppingCart, ChefHat, Save, Utensils, Clock, Pencil, ChevronRight, CheckCircle, PauseCircle, PackageCheck,
 } from 'lucide-react';
 import { useAppSettings } from '@/lib/AppSettings';
 import { PREP_TASK_TYPES, todayStr, fmtDate } from '@/components/kitchen/kitchenConstants';
 import { recipePerServing } from '@/lib/nutrition';
 import RecipePhoto from '@/components/kitchen/ui/RecipePhoto';
 import StatusChip from '@/components/kitchen/ui/StatusChip';
+import PrepOutputReviewSheet from '@/components/kitchen/PrepOutputReviewSheet';
 import { cn } from '@/lib/utils';
 
 const TASK_ICONS = {
@@ -29,6 +30,7 @@ export default function MealPrepSessionDetail({ session, recipes, onBack, onUpda
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddOutput, setShowAddOutput] = useState(false);
   const [saveTpl, setSaveTpl] = useState(false);
+  const [showPrepReview, setShowPrepReview] = useState(false);
 
   const items = session.items || [];
   const tasks = session.tasks || [];
@@ -69,7 +71,7 @@ export default function MealPrepSessionDetail({ session, recipes, onBack, onUpda
           <Button variant="ghost" size="icon" className="rounded-full shrink-0" onClick={() => setEditing(true)} aria-label="Edit session"><Pencil className="w-4 h-4" /></Button>
         </div>
         {session.notes && <p className="text-xs text-muted-foreground">{session.notes}</p>}
-        <div className="flex gap-2 pt-1">
+        <div className="flex gap-2 pt-1 flex-wrap">
           {canGen && recipeItems.length > 0 && (
             <Button size="sm" variant="outline" className="rounded-full" onClick={genGroceries}><ShoppingCart className="w-3.5 h-3.5 mr-1" /> Generate Groceries</Button>
           )}
@@ -77,6 +79,26 @@ export default function MealPrepSessionDetail({ session, recipes, onBack, onUpda
             <Button size="sm" variant="ghost" className="rounded-full" onClick={() => setSaveTpl(true)}><Save className="w-3.5 h-3.5 mr-1" /> Save as Template</Button>
           )}
         </div>
+        {/* Completion controls — never require all tasks to be done */}
+        {session.status !== 'completed' && (
+          <div className="flex gap-2 pt-1">
+            <Button size="sm" className="rounded-full" onClick={() => onUpdate({ status: 'completed' })}>
+              <CheckCircle className="w-3.5 h-3.5 mr-1" /> {completedTasks < tasks.length ? 'Partially Complete' : 'Complete'}
+            </Button>
+            {session.status === 'planned' && (
+              <Button size="sm" variant="outline" className="rounded-full" onClick={() => onUpdate({ status: 'in_progress' })}>
+                <PauseCircle className="w-3.5 h-3.5 mr-1" /> Continue Later
+              </Button>
+            )}
+          </div>
+        )}
+        {session.status === 'completed' && (
+          <div className="flex gap-2 pt-1">
+            <Button size="sm" variant="ghost" className="rounded-full" onClick={() => onUpdate({ status: 'in_progress' })}>
+              <Pencil className="w-3.5 h-3.5 mr-1" /> Reopen session
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* WHAT I'M MAKING */}
@@ -171,6 +193,11 @@ export default function MealPrepSessionDetail({ session, recipes, onBack, onUpda
             </div>
           )}
           <Button size="sm" variant="outline" className="rounded-full mt-2" onClick={() => setShowAddOutput(true)}><Plus className="w-3.5 h-3.5 mr-1" /> Add output</Button>
+          {outputs.length > 0 && (
+            <Button size="sm" className="rounded-full mt-2 ml-1" onClick={() => setShowPrepReview(true)}>
+              <PackageCheck className="w-3.5 h-3.5 mr-1" /> Review prepared food
+            </Button>
+          )}
         </div>
       )}
 
@@ -179,6 +206,7 @@ export default function MealPrepSessionDetail({ session, recipes, onBack, onUpda
       {showAddTask && <AddTaskSheet onSave={(task) => { onUpdate({ tasks: [...tasks, { ...task, id: String(Date.now()), done: false, order: tasks.length }] }); setShowAddTask(false); }} onClose={() => setShowAddTask(false)} />}
       {showAddOutput && <AddOutputSheet onSave={(out) => { onUpdate({ outputs: [...outputs, { ...out, date_prepared: todayStr() }] }); setShowAddOutput(false); }} onClose={() => setShowAddOutput(false)} />}
       {saveTpl && <SavePrepTemplateSheet session={session} onClose={() => setSaveTpl(false)} />}
+      <PrepOutputReviewSheet open={showPrepReview} onOpenChange={setShowPrepReview} session={session} recipes={recipes} />
     </div>
   );
 }

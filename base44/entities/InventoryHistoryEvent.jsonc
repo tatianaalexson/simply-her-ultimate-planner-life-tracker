@@ -1,0 +1,58 @@
+{
+  "name": "InventoryHistoryEvent",
+  "type": "object",
+  "properties": {
+    "inventory_item_id": {
+      "type": "string"
+    },
+    "item_name": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "added",
+        "qty_increased",
+        "qty_decreased",
+        "qty_set",
+        "moved",
+        "storage_changed",
+        "used_up",
+        "restored",
+        "discarded",
+        "expired"
+      ],
+      "default": "added"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "event_time": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "from_value": {
+      "type": "string"
+    },
+    "to_value": {
+      "type": "string"
+    },
+    "from_zone": {
+      "type": "string"
+    },
+    "to_zone": {
+      "type": "string"
+    },
+    "details": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "inventory_item_id",
+    "event_type",
+    "event_date"
+  ]
+}

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X, ChevronDown, ChevronUp, Check, MapPin } from 'lucide-react';
+import { X, ChevronDown, ChevronUp, Check, MapPin, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Full-screen in-store shopping experience.
@@ -15,6 +15,7 @@ export default function ShoppingMode({
   grouping,
   onToggle,
   onExit,
+  onFinish,
 }) {
   const [showCompleted, setShowCompleted] = useState(false);
 
@@ -48,6 +49,11 @@ export default function ShoppingMode({
               {active.length} remaining{showPrices && estRemaining > 0 ? ` · $${estRemaining.toFixed(2)} est` : ''}
             </p>
           </div>
+          {onFinish && completed.length > 0 && (
+            <Button size="sm" className="rounded-full shrink-0" onClick={onFinish}>
+              <CheckCircle className="w-4 h-4 mr-1" /> Finish
+            </Button>
+          )}
           <Button variant="ghost" size="icon" className="rounded-full shrink-0" onClick={onExit} aria-label="Exit shopping mode">
             <X className="w-5 h-5" />
           </Button>

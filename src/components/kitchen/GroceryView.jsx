@@ -8,15 +8,17 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
-  Plus, ShoppingCart, Package, Save, Search, Trash2, ChevronDown, ChevronUp, MoreHorizontal, ListPlus,
+  Plus, ShoppingCart, Package, Save, Search, Trash2, ChevronDown, ChevronUp, MoreHorizontal, ListPlus, CheckCircle, History,
 } from 'lucide-react';
 import KitchenEmptyState from '@/components/kitchen/ui/KitchenEmptyState';
+import KitchenSection from '@/components/kitchen/ui/KitchenSection';
 import ShoppingMode from '@/components/kitchen/ShoppingMode';
 import GenerateGrocerySheet from '@/components/kitchen/GenerateGrocerySheet';
 import StaplePicker from '@/components/kitchen/StaplePicker';
+import PostShoppingSheet from '@/components/kitchen/PostShoppingSheet';
 import { useGroceryItems, useMealPlan, useRecipes, useKitchenSettings } from '@/hooks/useKitchen';
 import { useAppSettings } from '@/lib/AppSettings';
-import { GROCERY_CATEGORIES } from '@/components/kitchen/kitchenConstants';
+import { GROCERY_CATEGORIES, fmtDate } from '@/components/kitchen/kitchenConstants';
 import { cn } from '@/lib/utils';
 
 const fmtMoney = (n) => (n ? `$${n.toFixed(2)}` : '$0.00');
@@ -37,9 +39,15 @@ export default function GroceryView({ onBack, onOpenGroceryReview, onNavigate })
   const [showStaples, setShowStaples] = useState(false);
   const [showSaveTpl, setShowSaveTpl] = useState(false);
   const [showNewList, setShowNewList] = useState(false);
+  const [showPostShopping, setShowPostShopping] = useState(false);
+  const [completingList, setCompletingList] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [q, setQ] = useState('');
   const [hideChecked, setHideChecked] = useState(false);
   const [expanded, setExpanded] = useState(null);
+
+  const hasInventory = isFeatureEnabled('kit.pantry') || isFeatureEnabled('kit.fridge') || isFeatureEnabled('kit.freezer');
+  const offerPostShopping = hasInventory && kitchenSettings?.offer_inventory_after_shopping !== false;
 
   const listNames = useMemo(() => {
     const names = new Set(['Weekly Groceries']);
@@ -48,9 +56,49 @@ export default function GroceryView({ onBack, onOpenGroceryReview, onNavigate })
   }, [allItems]);
 
   const items = useMemo(
-    () => allItems.filter((i) => (i.list_name || 'Weekly Groceries') === listName),
+    () => allItems.filter((i) => (i.list_name || 'Weekly Groceries') === listName && !i.list_archived),
     [allItems, listName]
   );
+
+  const archivedLists = useMemo(() => {
+    const names = new Map();
+    allItems.filter((i) => i.list_archived).forEach((i) => {
+      const name = i.list_name || 'Weekly Groceries';
+      if (!names.has(name)) names.set(name, { name, count: 0, items: [] });
+      const entry = names.get(name);
+      entry.count++;
+      entry.items.push(i);
+    });
+    return Array.from(names.values());
+  }, [allItems]);
+
+  const checkedItems = items.filter((i) => i.checked);
+
+  const archiveList = async () => {
+    try {
+      await base44.entities.GroceryItem.updateMany(
+        { list_name: listName, list_archived: { $ne: true } },
+        { $set: { list_archived: true } }
+      );
+      reload();
+    } catch { /* ignore */ }
+  };
+
+  const completeList = async () => {
+    if (checkedItems.length > 0 && offerPostShopping) {
+      setCompletingList(true);
+      setShowPostShopping(true);
+    } else {
+      archiveList();
+    }
+  };
+
+  const onPostShoppingDone = () => {
+    if (completingList) {
+      setCompletingList(false);
+      archiveList();
+    }
+  };
 
   const filtered = useMemo(() => items.filter((i) => {
     if (hideChecked && i.checked) return false;
@@ -91,6 +139,7 @@ export default function GroceryView({ onBack, onOpenGroceryReview, onNavigate })
         items={items} listName={listName} showPrices={showPrices} grouping={grouping}
         onToggle={(id, checked) => update(id, { checked })}
         onExit={() => setShopMode(false)}
+        onFinish={completeList}
       />
     );
   }
@@ -123,6 +172,11 @@ export default function GroceryView({ onBack, onOpenGroceryReview, onNavigate })
         {isFeatureEnabled('kit.frequent') && (
           <Button size="sm" variant="outline" className="rounded-full" onClick={() => setShowStaples(true)}>
             <Package className="w-4 h-4 mr-1" /> Staples
+          </Button>
+        )}
+        {checkedItems.length > 0 && (
+          <Button size="sm" variant="outline" className="rounded-full" onClick={completeList}>
+            <CheckCircle className="w-4 h-4 mr-1" /> Complete List
           </Button>
         )}
         <DropdownMenu>
@@ -214,11 +268,60 @@ export default function GroceryView({ onBack, onOpenGroceryReview, onNavigate })
         </div>
       )}
 
+      {/* Archived lists history */}
+      {isFeatureEnabled('kit.foodHistory') && archivedLists.length > 0 && (
+        <KitchenSection eyebrow="Completed lists">
+          <div className="space-y-1.5">
+            {archivedLists.map((al) => (
+              <ArchivedListRow key={al.name} list={al} onRestore={async () => {
+                try {
+                  await base44.entities.GroceryItem.updateMany(
+                    { list_name: al.name, list_archived: true },
+                    { $set: { list_archived: false } }
+                  );
+                  setListName(al.name);
+                  reload();
+                } catch { /* ignore */ }
+              }} />
+            ))}
+          </div>
+        </KitchenSection>
+      )}
+
       <AddItemSheet open={showAdd} onOpenChange={setShowAdd} listName={listName} showPrices={showPrices} onAdd={add} />
       <GenerateGrocerySheet open={showGenerate} onOpenChange={setShowGenerate} meals={meals} recipes={recipes} onGenerate={(sources) => onOpenGroceryReview(sources, listName)} />
       <StaplePicker open={showStaples} onOpenChange={setShowStaples} listName={listName} existingItems={items} onAdded={reload} />
       <SaveGroceryTemplateSheet open={showSaveTpl} onOpenChange={setShowSaveTpl} items={items} listName={listName} />
       <NewListSheet open={showNewList} onOpenChange={setShowNewList} onCreate={(name) => { setListName(name); setShowNewList(false); }} />
+      <PostShoppingSheet open={showPostShopping} onOpenChange={setShowPostShopping} listName={listName} items={checkedItems} onDone={onPostShoppingDone} />
+    </div>
+  );
+}
+
+function ArchivedListRow({ list, onRestore }) {
+  const [expanded, setExpanded] = useState(false);
+  const purchased = list.items.filter((i) => i.checked).length;
+  return (
+    <div className="rounded-2xl border border-border/40 bg-card overflow-hidden">
+      <button onClick={() => setExpanded((e) => !e)} className="w-full flex items-center gap-2 px-3 py-2.5 text-left">
+        <History className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{list.name}</p>
+          <p className="text-[11px] text-muted-foreground">{list.count} items · {purchased} purchased</p>
+        </div>
+        <ChevronDown className={cn('w-4 h-4 text-muted-foreground transition-transform', expanded && 'rotate-180')} />
+      </button>
+      {expanded && (
+        <div className="px-3 pb-2.5 space-y-0.5 border-t border-border/30 pt-2">
+          {list.items.slice(0, 8).map((i) => (
+            <p key={i.id} className={cn('text-[11px]', i.checked ? 'text-muted-foreground line-through' : 'text-muted-foreground')}>
+              {i.name} — {i.qty}{i.unit ? ` ${i.unit}` : ''}
+            </p>
+          ))}
+          {list.items.length > 8 && <p className="text-[10px] text-muted-foreground">+{list.items.length - 8} more</p>}
+          <button onClick={onRestore} className="text-[11px] text-primary mt-1">Restore list</button>
+        </div>
+      )}
     </div>
   );
 }

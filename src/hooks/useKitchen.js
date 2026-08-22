@@ -17,3 +17,5 @@ export const useKitchenTemplates = (kind) =>
 export const useOccasionPlans = () => useEntityList('OccasionPlan', {}, '-date');
 export const useCookingNotes = (recipeId) =>
   useEntityList('RecipeCookingNote', recipeId ? { recipe_id: recipeId } : {}, '-note_date');
+export const useInventoryHistory = (itemId) =>
+  useEntityList('InventoryHistoryEvent', itemId ? { inventory_item_id: itemId } : {}, '-event_date');

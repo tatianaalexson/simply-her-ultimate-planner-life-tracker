@@ -74,6 +74,10 @@
     },
     "source_prep_id": {
       "type": "string"
+    },
+    "list_archived": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [
