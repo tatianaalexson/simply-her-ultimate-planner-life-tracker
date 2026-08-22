@@ -52,10 +52,10 @@ export default function KitchenStudio() {
     switch (view) {
       case 'recipes': return isFeatureEnabled('kit.recipes') ? <RecipeList onBack={() => nav('home')} onOpenGroceryReview={openGroceryReview} /> : home;
       case 'mealplan': return isFeatureEnabled('kit.mealplan') ? <MealPlanView onBack={() => nav('home')} onOpenGroceryReview={openGroceryReview} onLogFood={openLogFood} /> : home;
-      case 'groceries': return isFeatureEnabled('kit.grocery') ? <GroceryView onBack={() => nav('home')} onOpenGroceryReview={openGroceryReview} /> : home;
-      case 'pantry': return isFeatureEnabled('kit.pantry') ? <InventoryView zone="pantry" onBack={() => nav('home')} /> : home;
-      case 'fridge': return isFeatureEnabled('kit.fridge') ? <InventoryView zone="fridge" onBack={() => nav('home')} /> : home;
-      case 'freezer': return isFeatureEnabled('kit.freezer') ? <InventoryView zone="freezer" onBack={() => nav('home')} /> : home;
+      case 'groceries': return isFeatureEnabled('kit.grocery') ? <GroceryView onBack={() => nav('home')} onOpenGroceryReview={openGroceryReview} onNavigate={nav} /> : home;
+      case 'pantry': return isFeatureEnabled('kit.pantry') ? <InventoryView zone="pantry" onBack={() => nav('home')} onNavigate={nav} /> : home;
+      case 'fridge': return isFeatureEnabled('kit.fridge') ? <InventoryView zone="fridge" onBack={() => nav('home')} onNavigate={nav} /> : home;
+      case 'freezer': return isFeatureEnabled('kit.freezer') ? <InventoryView zone="freezer" onBack={() => nav('home')} onNavigate={nav} /> : home;
       case 'mealprep': return isFeatureEnabled('kit.mealprep') ? <MealPrepView onBack={() => nav('home')} onOpenGroceryReview={openGroceryReview} onLogFood={openLogFood} /> : home;
       case 'leftovers': return isFeatureEnabled('kit.leftovers') ? <LeftoversView onBack={() => nav('home')} onLogFood={openLogFood} /> : home;
       case 'equipment': return isFeatureEnabled('kit.equipment') ? <EquipmentView onBack={() => nav('home')} /> : home;

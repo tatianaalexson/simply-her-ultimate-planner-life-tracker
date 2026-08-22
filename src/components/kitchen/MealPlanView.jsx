@@ -187,7 +187,7 @@ export default function MealPlanView({ onBack, onOpenGroceryReview, onLogFood })
           await addTemplate({
             kind: 'meal-plan', name, description: desc,
             meals: visibleMeals.filter((m) => days.includes(m.date) && !m._virtual).map((m) => ({
-              day_of_week: Math.floor(days.indexOf(m.date) / 1) % 14,
+              day_of_week: days.indexOf(m.date),
               meal_slot: m.meal_slot, meal_type: m.meal_type, recipe_id: m.recipe_id || '',
               custom_name: m.custom_name || '', servings: m.servings || 1, notes: m.notes || '',
             })),

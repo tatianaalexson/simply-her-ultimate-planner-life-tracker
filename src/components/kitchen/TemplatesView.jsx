@@ -7,7 +7,7 @@ import { Plus, Trash2, Copy, Sparkles, Save, Pencil } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { useKitchenTemplates, useRecipes } from '@/hooks/useKitchen';
 import { useAppSettings } from '@/lib/AppSettings';
-import { GROCERY_CATEGORIES, MEAL_SLOTS, DAY_OF_WEEK, EMPTY_TEMPLATES } from '@/components/kitchen/kitchenConstants';
+import { GROCERY_CATEGORIES, MEAL_SLOTS, DAY_OF_WEEK, FORTNIGHT_DAYS, EMPTY_TEMPLATES } from '@/components/kitchen/kitchenConstants';
 import ApplyGroceryTemplateSheet from '@/components/kitchen/template/ApplyGroceryTemplateSheet';
 import ApplyMealPlanTemplateSheet from '@/components/kitchen/template/ApplyMealPlanTemplateSheet';
 
@@ -169,7 +169,7 @@ function MealPlanTemplateEditor({ t, set, recipes }) {
         <div key={i} className="space-y-1 border-t border-border pt-2 first:border-0 first:pt-0">
           <div className="grid grid-cols-2 gap-1.5">
             <select value={m.day_of_week ?? 0} onChange={(e) => upd(i, 'day_of_week', parseInt(e.target.value))} className="rounded-2xl border bg-card px-2 h-8 text-xs">
-              {DAY_OF_WEEK.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+              {FORTNIGHT_DAYS.map((d) => <option key={d.value} value={d.value}>{d.weekLabel} · {d.label}</option>)}
             </select>
             <select value={m.meal_slot || 'dinner'} onChange={(e) => upd(i, 'meal_slot', e.target.value)} className="rounded-2xl border bg-card px-2 h-8 text-xs">
               {MEAL_SLOTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}

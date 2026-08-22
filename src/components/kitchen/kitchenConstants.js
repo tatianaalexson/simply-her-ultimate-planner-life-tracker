@@ -65,6 +65,17 @@ export const DAY_OF_WEEK = [
   { value: 6, label: 'Sunday' },
 ];
 
+// 14-day structure for two-week meal-plan templates.
+// day_of_week 0–6 = Week 1 (Mon–Sun), 7–13 = Week 2 (Mon–Sun).
+// Existing 7-day templates (values 0–6) remain valid and apply to Week 1 by default.
+export const FORTNIGHT_DAYS = Array.from({ length: 14 }, (_, i) => ({
+  value: i,
+  week: Math.floor(i / 7),
+  weekday: i % 7,
+  label: DAY_OF_WEEK[i % 7].label,
+  weekLabel: `Week ${Math.floor(i / 7) + 1}`,
+}));
+
 export const EMPTY_TEMPLATES = {
   'meal-plan': { title: 'No meal plan templates yet', subtitle: 'Save a week you love and use it again.' },
   grocery: { title: 'No grocery templates yet', subtitle: 'Keep your usual shopping lists ready to go.' },

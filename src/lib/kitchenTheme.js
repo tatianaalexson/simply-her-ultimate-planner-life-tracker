@@ -25,7 +25,30 @@ export function getKitchenTheme(themeId) {
   return PERSONALITIES[themeId] || DEFAULT_PERSONALITY;
 }
 
+// Section-specific decorative motifs for empty states and placeholders.
+const SECTION_MOTIFS = {
+  groceries: '🛒',
+  shopping: '✓',
+  mealprep: '👨‍🍳',
+  pantry: '📦',
+  fridge: '🥛',
+  freezer: '❄️',
+  leftovers: '🍽️',
+  nutrition: '🥗',
+  recipes: '📖',
+  mealplan: '📅',
+};
+
+export function getSectionMotif(section) {
+  return SECTION_MOTIFS[section] || '🌿';
+}
+
 export function useKitchenTheme() {
   const { settings } = useAppSettings();
   return getKitchenTheme(settings.themeId);
+}
+
+export function useKitchenSectionTheme(section) {
+  const theme = useKitchenTheme();
+  return { ...theme, sectionMotif: getSectionMotif(section) };
 }

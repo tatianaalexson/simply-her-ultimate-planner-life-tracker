@@ -1,226 +1,190 @@
-import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { ArrowLeft, Plus, Trash2, ShoppingCart, ChefHat, ChevronRight, Save, Utensils } from 'lucide-react';
-import EmptyState from '@/components/EmptyState';
-import { useMealPrepSessions, useRecipes } from '@/hooks/useKitchen';
+import { Plus, ChefHat, ChevronRight, Clock, Utensils } from 'lucide-react';
+import KitchenEmptyState from '@/components/kitchen/ui/KitchenEmptyState';
+import KitchenSection from '@/components/kitchen/ui/KitchenSection';
+import FortnightSummary from '@/components/kitchen/ui/FortnightSummary';
+import MealPrepSessionDetail from '@/components/kitchen/MealPrepSessionDetail';
+import RecipePhoto from '@/components/kitchen/ui/RecipePhoto';
+import { useMealPrepSessions, useMealPlan, useGroceryItems, useRecipes } from '@/hooks/useKitchen';
 import { useAppSettings } from '@/lib/AppSettings';
-import { PREP_TASK_TYPES, EMPTY, todayStr } from '@/components/kitchen/kitchenConstants';
-import { recipePerServing } from '@/lib/nutrition';
+import { todayStr, startOfWeek, weekDates, fmtDate } from '@/components/kitchen/kitchenConstants';
+import { cn } from '@/lib/utils';
+
+const STATUS_LABELS = { planned: 'Planned', in_progress: 'In progress', completed: 'Completed' };
 
 export default function MealPrepView({ onBack, onOpenGroceryReview, onLogFood }) {
   const { isFeatureEnabled } = useAppSettings();
   const { items: sessions, add, update, remove } = useMealPrepSessions();
+  const { items: meals } = useMealPlan();
+  const { items: groceries } = useGroceryItems();
   const { items: recipes } = useRecipes();
   const [openId, setOpenId] = useState(null);
 
   const open = sessions.find((s) => s.id === openId);
 
-  const generateGroceries = (session) => {
-    const sources = (session.items || [])
-      .filter((it) => it.recipe_id)
-      .map((it) => ({ recipe: recipes.find((r) => r.id === it.recipe_id), plannedServings: it.servings || it.portions || 1, prep: { id: session.id } }))
-      .filter((s) => s.recipe);
-    if (sources.length === 0) return;
-    onOpenGroceryReview(sources);
-  };
-
   if (open) {
-    return <SessionDetail session={open} recipes={recipes} onBack={() => setOpenId(null)} onUpdate={(data) => update(open.id, data)} onOpenGroceryReview={() => generateGroceries(open)} onLogFood={onLogFood} canLog={isFeatureEnabled('kit.foodDiary')} canGen={isFeatureEnabled('kit.prepGen')} canTasks={isFeatureEnabled('kit.prepTasks')} canStorage={isFeatureEnabled('kit.prepStorage')} />;
+    return (
+      <MealPrepSessionDetail
+        session={open} recipes={recipes} onBack={() => setOpenId(null)}
+        onUpdate={(data) => update(open.id, data)}
+        onOpenGroceryReview={onOpenGroceryReview} onLogFood={onLogFood}
+        canLog={isFeatureEnabled('kit.foodDiary')} canGen={isFeatureEnabled('kit.prepGen')}
+        canTasks={isFeatureEnabled('kit.prepTasks')} canStorage={isFeatureEnabled('kit.prepStorage')}
+        canTemplates={isFeatureEnabled('kit.prepTemplates')}
+      />
+    );
   }
+
+  // 14-day range
+  const fortStart = startOfWeek();
+  const fortStartStr = fortStart.toISOString().slice(0, 10);
+  const fortEndStr = new Date(fortStart.getTime() + 13 * 86400000).toISOString().slice(0, 10);
+  const w1 = weekDates(fortStart);
+  const w2 = weekDates(new Date(fortStart.getTime() + 7 * 86400000));
+
+  const today = todayStr();
+  const fortSessions = sessions.filter((s) => s.date && s.date >= fortStartStr && s.date <= fortEndStr);
+  const w1Sessions = fortSessions.filter((s) => w1.includes(s.date));
+  const w2Sessions = fortSessions.filter((s) => w2.includes(s.date));
+
+  const upcoming = sessions
+    .filter((s) => s.status !== 'completed' && (!s.date || s.date >= today))
+    .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const past = sessions
+    .filter((s) => s.status === 'completed' || (s.date && s.date < today))
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const dinnersPlanned = meals.filter((m) => {
+    const fn = [...w1, ...w2];
+    return fn.includes(m.date) && m.meal_slot === 'dinner';
+  }).length;
+  const groceryLeft = groceries.filter((g) => !g.checked).length;
+  const openPrepCount = sessions.filter((s) => s.status !== 'completed').length;
+
+  const handleNew = async () => {
+    const s = await add({ name: 'New prep session', date: todayStr(), status: 'planned', items: [], tasks: [], outputs: [] });
+    setOpenId(s.id);
+  };
 
   return (
     <div className="space-y-4 pb-8">
       <div className="flex items-center gap-2">
         <h2 className="font-heading text-lg font-semibold flex-1">Meal Prep</h2>
-        <Button size="sm" className="rounded-full" onClick={() => add({ name: 'New prep session', date: todayStr(), status: 'planned', items: [], tasks: [], outputs: [] }).then((s) => setOpenId(s.id))}><Plus className="w-4 h-4 mr-1" /> New Prep Session</Button>
+        <Button size="sm" className="rounded-full" onClick={handleNew}><Plus className="w-4 h-4 mr-1" /> New Prep Session</Button>
       </div>
 
-      {sessions.length === 0 ? (
-        <EmptyState icon={ChefHat} title={EMPTY.mealprep.title} subtitle={EMPTY.mealprep.subtitle} />
-      ) : (
-        <div className="space-y-2">
-          {sessions.map((s) => (
-            <Card key={s.id} className="rounded-3xl cursor-pointer active:scale-[0.98] transition" onClick={() => setOpenId(s.id)}>
-              <CardContent className="p-3 flex items-center gap-2">
-                <ChefHat className="w-5 h-5 text-muted-foreground" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{s.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{(s.items || []).length} item(s) · {s.status}</p>
+      <FortnightSummary dinners={dinnersPlanned} preps={openPrepCount} groceries={groceryLeft} onNavigate={null} />
+
+      {/* 14-day overview */}
+      <KitchenSection eyebrow="Current 2 weeks" title={`${fmtDate(fortStartStr)} – ${fmtDate(fortEndStr)}`}>
+        {fortSessions.length === 0 ? (
+          <p className="text-xs text-muted-foreground px-1">No prep sessions in the next 2 weeks.</p>
+        ) : (
+          <div className="space-y-3">
+            {[
+              { label: 'Week 1', sessions: w1Sessions, dates: w1 },
+              { label: 'Week 2', sessions: w2Sessions, dates: w2 },
+            ].filter((sec) => sec.sessions.length > 0).map((sec) => (
+              <div key={sec.label}>
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-1 px-1">{sec.label}</p>
+                <div className="space-y-1.5">
+                  {sec.sessions.map((s) => (
+                    <PrepOverviewCard key={s.id} session={s} recipes={recipes} onOpen={() => setOpenId(s.id)} />
+                  ))}
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </KitchenSection>
+
+      {/* Upcoming */}
+      <KitchenSection eyebrow="Upcoming">
+        {upcoming.length === 0 ? (
+          <KitchenEmptyState icon={ChefHat} title="No prep sessions planned." subtitle="Start one when you're ready." actionLabel="Plan a Prep Session" onAction={handleNew} />
+        ) : (
+          <div className="space-y-2">
+            {upcoming.map((s) => (
+              <SessionCard key={s.id} session={s} recipes={recipes} onOpen={() => setOpenId(s.id)} />
+            ))}
+          </div>
+        )}
+      </KitchenSection>
+
+      {/* Past */}
+      {past.length > 0 && (
+        <KitchenSection eyebrow="Past">
+          <div className="space-y-2">
+            {past.map((s) => (
+              <SessionCard key={s.id} session={s} recipes={recipes} onOpen={() => setOpenId(s.id)} past />
+            ))}
+          </div>
+        </KitchenSection>
       )}
     </div>
   );
 }
 
-function SessionDetail({ session, recipes, onBack, onUpdate, onOpenGroceryReview, onLogFood, canLog, canGen, canTasks, canStorage }) {
-  const { isFeatureEnabled } = useAppSettings();
-  const [newItem, setNewItem] = useState({ recipe_id: '', custom_name: '', portions: 1, servings: 1 });
-  const [task, setTask] = useState({ text: '', type: 'chop', duration: 0 });
-  const [output, setOutput] = useState({ name: '', portions: 1, zone: 'fridge', use_by: '' });
-  const [saveTpl, setSaveTpl] = useState(false);
+function PrepOverviewCard({ session, recipes, onOpen }) {
+  const items = session.items || [];
+  const recipeCount = items.filter((it) => it.recipe_id).length;
+  const portions = items.reduce((s, it) => s + (it.portions || 0), 0);
+  const tasks = session.tasks || [];
+  const taskCount = tasks.length;
+  return (
+    <button onClick={onOpen} className="w-full flex items-center gap-2 rounded-2xl border border-border/60 bg-card p-2.5 text-left active:scale-[0.98] transition">
+      <ChefHat className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">{session.name}</p>
+        <p className="text-[11px] text-muted-foreground">
+          {session.date ? fmtDate(session.date) : ''}
+          {recipeCount > 0 ? ` · ${recipeCount} recipe${recipeCount !== 1 ? 's' : ''}` : ''}
+          {portions > 0 ? ` · ${portions} portions` : ''}
+          {taskCount > 0 ? ` · ${taskCount} tasks` : ''}
+        </p>
+      </div>
+      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+    </button>
+  );
+}
 
+function SessionCard({ session, recipes, onOpen, past }) {
   const items = session.items || [];
   const tasks = session.tasks || [];
-  const outputs = session.outputs || [];
-
-  const addItem = () => {
-    const name = newItem.recipe_id ? recipes.find((r) => r.id === newItem.recipe_id)?.name : newItem.custom_name;
-    if (!name) return;
-    onUpdate({ items: [...items, { ...newItem, custom_name: name }] });
-    setNewItem({ recipe_id: '', custom_name: '', portions: 1, servings: 1 });
-  };
-  const addTask = () => {
-    if (!task.text.trim()) return;
-    onUpdate({ tasks: [...tasks, { ...task, id: String(Date.now()), done: false, order: tasks.length }] });
-    setTask({ text: '', type: 'chop', duration: 0 });
-  };
-  const toggleTask = (id) => onUpdate({ tasks: tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)) });
-  const addOutput = () => {
-    if (!output.name.trim()) return;
-    onUpdate({ outputs: [...outputs, { ...output, date_prepared: todayStr() }] });
-    setOutput({ name: '', portions: 1, zone: 'fridge', use_by: '' });
-  };
+  const totalDuration = tasks.reduce((s, t) => s + (t.duration || 0), 0);
+  const completedTasks = tasks.filter((t) => t.done).length;
+  const totalPortions = items.reduce((s, it) => s + (it.portions || 0), 0);
 
   return (
-    <div className="space-y-4 pb-8">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={onBack} className="rounded-full"><ArrowLeft className="w-4 h-4" /></Button>
-        <Input value={session.name} onChange={(e) => onUpdate({ name: e.target.value })} className="rounded-2xl flex-1 font-heading" />
-        {isFeatureEnabled('kit.prepTemplates') && <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setSaveTpl(true)}><Save className="w-4 h-4" /></Button>}
+    <button onClick={onOpen} className={cn('block w-full text-left rounded-3xl border border-border/60 bg-card p-3 active:scale-[0.99] hover:shadow-sm transition', past && 'opacity-70')}>
+      <div className="flex items-start gap-2">
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+          <ChefHat className="w-5 h-5 text-primary" strokeWidth={1.5} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-heading text-sm font-semibold truncate">{session.name}</p>
+          <div className="flex items-center gap-2 flex-wrap mt-0.5">
+            {session.date && <span className="text-[11px] text-muted-foreground">{fmtDate(session.date)}</span>}
+            {totalDuration > 0 && <span className="text-[11px] text-muted-foreground inline-flex items-center gap-0.5"><Clock className="w-3 h-3" />~{totalDuration} min</span>}
+            {tasks.length > 0 && <span className="text-[11px] text-muted-foreground">{completedTasks} / {tasks.length} tasks</span>}
+          </div>
+        </div>
+        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
       </div>
-
-      <Card className="rounded-3xl"><CardContent className="p-3 space-y-2">
-        <div className="flex gap-2">
-          <Input type="date" value={session.date || ''} onChange={(e) => onUpdate({ date: e.target.value })} className="rounded-2xl" />
-          <select value={session.status} onChange={(e) => onUpdate({ status: e.target.value })} className="rounded-2xl border bg-card px-3 py-2 text-sm">
-            {['planned', 'in_progress', 'completed'].map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-        <Textarea value={session.notes || ''} onChange={(e) => onUpdate({ notes: e.target.value })} placeholder="Notes" className="rounded-2xl" />
-      </CardContent></Card>
-
-      <Card className="rounded-3xl"><CardContent className="p-3 space-y-2">
-        <p className="text-sm font-medium">Items</p>
-        {items.map((it, i) => {
-          const rec = it.recipe_id ? recipes.find((r) => r.id === it.recipe_id) : null;
-          const pn = rec ? recipePerServing(rec) : null;
-          return (
-            <div key={i} className="flex items-center gap-2 text-sm border-t border-border pt-2 first:border-0 first:pt-0">
-              <span className="flex-1 truncate">{it.custom_name}</span>
-              <span className="text-xs text-muted-foreground shrink-0">{it.portions} portions</span>
-              {canLog && pn && (
-                <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0" title="Log portion" onClick={() => onLogFood({ name: it.custom_name, perServingNut: pn, servings: 1, source_type: 'meal_prep', prep_session_id: session.id })}>
-                  <Utensils className="w-3 h-3 text-muted-foreground" />
-                </Button>
-              )}
-              <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0" onClick={() => onUpdate({ items: items.filter((_, j) => j !== i) })}><Trash2 className="w-3 h-3 text-muted-foreground" /></Button>
-            </div>
-          );
-        })}
-        <div className="flex gap-2">
-          <select value={newItem.recipe_id} onChange={(e) => setNewItem((p) => ({ ...p, recipe_id: e.target.value }))} className="rounded-2xl border bg-card px-3 py-2 text-sm flex-1">
-            <option value="">Recipe (or custom)</option>
-            {recipes.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-          </select>
-          {!newItem.recipe_id && <Input value={newItem.custom_name} onChange={(e) => setNewItem((p) => ({ ...p, custom_name: e.target.value }))} placeholder="Custom" className="rounded-2xl flex-1" />}
-        </div>
-        <div className="flex gap-2">
-          <Input type="number" value={newItem.portions} onChange={(e) => setNewItem((p) => ({ ...p, portions: parseInt(e.target.value) || 1 }))} className="rounded-2xl w-24" />
-          <Button className="rounded-full flex-1" onClick={addItem}><Plus className="w-4 h-4 mr-1" /> Add item</Button>
-        </div>
-      </CardContent></Card>
-
-      {canGen && (
-        <Button className="rounded-full w-full" onClick={onOpenGroceryReview} disabled={!items.some((i) => i.recipe_id)}>
-          <ShoppingCart className="w-4 h-4 mr-1" /> Generate grocery list
-        </Button>
-      )}
-
-      {canTasks && (
-        <Card className="rounded-3xl"><CardContent className="p-3 space-y-2">
-          <p className="text-sm font-medium">Prep tasks</p>
-          {tasks.map((t) => (
-            <div key={t.id} className="flex items-center gap-2 text-sm border-t border-border pt-2 first:border-0 first:pt-0">
-              <Checkbox checked={!!t.done} onCheckedChange={() => toggleTask(t.id)} />
-              <span className={`flex-1 ${t.done ? 'line-through text-muted-foreground' : ''}`}>{t.text}</span>
-              <span className="text-[10px] text-muted-foreground capitalize">{t.type}</span>
-              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => onUpdate({ tasks: tasks.filter((x) => x.id !== t.id) })}><Trash2 className="w-3 h-3 text-muted-foreground" /></Button>
-            </div>
+      {items.length > 0 && (
+        <div className="mt-2 space-y-0.5 pl-12">
+          {items.slice(0, 3).map((it, i) => (
+            <p key={i} className="text-[11px] text-muted-foreground truncate">{it.custom_name} ×{it.portions || 1}</p>
           ))}
-          <div className="flex gap-2">
-            <Input value={task.text} onChange={(e) => setTask((p) => ({ ...p, text: e.target.value }))} placeholder="Task" className="rounded-2xl flex-1" />
-            <select value={task.type} onChange={(e) => setTask((p) => ({ ...p, type: e.target.value }))} className="rounded-2xl border bg-card px-3 py-2 text-sm">
-              {PREP_TASK_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <Button size="icon" className="rounded-2xl" onClick={addTask}><Plus className="w-4 h-4" /></Button>
-          </div>
-        </CardContent></Card>
-      )}
-
-      {canStorage && (
-        <Card className="rounded-3xl"><CardContent className="p-3 space-y-2">
-          <p className="text-sm font-medium">Outputs</p>
-          {outputs.map((o, i) => (
-            <div key={i} className="flex items-center gap-2 text-sm border-t border-border pt-2 first:border-0 first:pt-0">
-              <span className="flex-1">{o.name}</span>
-              <span className="text-xs text-muted-foreground">{o.portions} · {o.zone}</span>
-              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => onUpdate({ outputs: outputs.filter((_, j) => j !== i) })}><Trash2 className="w-3 h-3 text-muted-foreground" /></Button>
-            </div>
-          ))}
-          <div className="flex gap-2">
-            <Input value={output.name} onChange={(e) => setOutput((p) => ({ ...p, name: e.target.value }))} placeholder="Output name" className="rounded-2xl flex-1" />
-            <Input type="number" value={output.portions} onChange={(e) => setOutput((p) => ({ ...p, portions: parseInt(e.target.value) || 1 }))} className="rounded-2xl w-20" />
-            <select value={output.zone} onChange={(e) => setOutput((p) => ({ ...p, zone: e.target.value }))} className="rounded-2xl border bg-card px-3 py-2 text-sm">
-              {['fridge', 'freezer', 'pantry'].map((z) => <option key={z} value={z}>{z}</option>)}
-            </select>
-          </div>
-          <Input type="date" value={output.use_by} onChange={(e) => setOutput((p) => ({ ...p, use_by: e.target.value }))} className="rounded-2xl" />
-          <Button className="rounded-full w-full" onClick={addOutput}><Plus className="w-4 h-4 mr-1" /> Add output</Button>
-        </CardContent></Card>
-      )}
-
-      {saveTpl && <SavePrepTemplateSheet session={session} onClose={() => setSaveTpl(false)} />}
-    </div>
-  );
-}
-
-function SavePrepTemplateSheet({ session, onClose }) {
-  const [name, setName] = useState(`${session.name} template`);
-  const [busy, setBusy] = useState(false);
-  const save = async () => {
-    setBusy(true);
-    try {
-      await base44.entities.KitchenTemplate.create({
-        kind: 'meal-prep', name, description: '',
-        items: [], meals: [],
-        prep_items: (session.items || []).map((it) => ({ recipe_id: it.recipe_id || '', custom_name: it.custom_name || '', portions: it.portions || 1, servings: it.servings || 1 })),
-        prep_tasks: (session.tasks || []).map((t) => ({ text: t.text, type: t.type || 'custom', duration: t.duration || 0 })),
-        prep_default_portions: 4, notes: session.notes || '',
-      });
-    } catch { /* ignore */ }
-    setBusy(false); onClose();
-  };
-  return (
-    <Sheet open onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="bottom" className="rounded-t-3xl pb-8">
-        <SheetHeader className="text-center"><SheetTitle className="font-heading">Save prep template</SheetTitle></SheetHeader>
-        <div className="space-y-3 mt-4">
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Template name" className="rounded-2xl" autoFocus />
-          <p className="text-[11px] text-muted-foreground">Task completion state and prepared dates are not included.</p>
-          <Button className="rounded-full w-full" onClick={save} disabled={busy}>Save template</Button>
+          {items.length > 3 && <p className="text-[10px] text-muted-foreground">+{items.length - 3} more</p>}
         </div>
-      </SheetContent>
-    </Sheet>
+      )}
+      {!past && (
+        <div className="mt-2 pl-12">
+          <span className="text-xs text-primary font-medium">Continue Prep</span>
+        </div>
+      )}
+    </button>
   );
 }

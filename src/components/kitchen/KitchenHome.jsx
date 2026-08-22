@@ -14,6 +14,7 @@ import {
 import KitchenSection from '@/components/kitchen/ui/KitchenSection';
 import RecipePhoto from '@/components/kitchen/ui/RecipePhoto';
 import StatusChip from '@/components/kitchen/ui/StatusChip';
+import FortnightSummary from '@/components/kitchen/ui/FortnightSummary';
 
 const QUICK_ACCESS = [
   { view: 'mealplan', label: 'Meals', icon: CalendarDays, feat: 'kit.mealplan' },
@@ -64,6 +65,7 @@ export default function KitchenHome({ onNavigate, onQuickAdd }) {
   const todayMeals = meals.filter((m) => m.date === today);
   const weekMeals = meals.filter((m) => week.includes(m.date));
   const dinnersPlanned = meals.filter((m) => fortnight.includes(m.date) && m.meal_slot === 'dinner').length;
+  const openDinners = fortnight.filter((d) => !meals.some((m) => m.date === d && m.meal_slot === 'dinner')).length;
   const dinner = todayMeals.find((m) => m.meal_slot === 'dinner');
   const dinnerRecipe = dinner?.recipe_id ? recipes.find((r) => r.id === dinner.recipe_id) : null;
   const upcomingPrep = preps
@@ -214,31 +216,14 @@ export default function KitchenHome({ onNavigate, onQuickAdd }) {
       </KitchenSection>
 
       {/* Next 2 weeks */}
-      <KitchenSection eyebrow="Next 2 weeks">
-        <div className="grid grid-cols-3 gap-2.5">
-          <button
-            onClick={() => onNavigate('mealplan')}
-            className="rounded-2xl border border-border/60 bg-card p-3 text-center active:scale-[0.98] hover:shadow-sm transition"
-          >
-            <p className="font-heading text-xl font-semibold">{dinnersPlanned}</p>
-            <p className="text-[11px] text-muted-foreground">dinners planned</p>
-          </button>
-          <button
-            onClick={() => onNavigate('groceries')}
-            className="rounded-2xl border border-border/60 bg-card p-3 text-center active:scale-[0.98] hover:shadow-sm transition"
-          >
-            <p className="font-heading text-xl font-semibold">{groceryLeft}</p>
-            <p className="text-[11px] text-muted-foreground">groceries left</p>
-          </button>
-          <button
-            onClick={() => onNavigate('mealprep')}
-            className="rounded-2xl border border-border/60 bg-card p-3 text-center active:scale-[0.98] hover:shadow-sm transition"
-          >
-            <p className="font-heading text-xl font-semibold">{openPrepCount}</p>
-            <p className="text-[11px] text-muted-foreground">prep sessions</p>
-          </button>
-        </div>
-      </KitchenSection>
+      <FortnightSummary
+        dinners={dinnersPlanned}
+        preps={openPrepCount}
+        groceries={groceryLeft}
+        openDinners={openDinners}
+        showOpenDinners
+        onNavigate={onNavigate}
+      />
 
       {/* Quick access */}
       <KitchenSection eyebrow="Quick access">
