@@ -6,7 +6,8 @@
       "type": "string",
       "enum": [
         "health_connect",
-        "google_health"
+        "google_health",
+        "apple_health"
       ],
       "description": "The external health provider this connection represents"
     },
@@ -30,7 +31,7 @@
     },
     "provider_account_label": {
       "type": "string",
-      "description": "Friendly label for the connected account (e.g. 'Fitbit via Google Health')"
+      "description": "Friendly label for the connected account"
     },
     "scopes": {
       "type": "array",
@@ -57,16 +58,13 @@
       "description": "Health data type IDs the user authorized Simply Her to WRITE to this provider"
     },
     "last_sync_at": {
-      "type": "string",
-      "description": "ISO timestamp of the last sync attempt"
+      "type": "string"
     },
     "last_successful_sync_at": {
-      "type": "string",
-      "description": "ISO timestamp of the last successful sync"
+      "type": "string"
     },
     "last_error": {
-      "type": "string",
-      "description": "User-friendly error message from last failed sync"
+      "type": "string"
     },
     "sync_cursor": {
       "type": "string",
@@ -109,8 +107,7 @@
       "type": "string"
     },
     "platform_capability": {
-      "type": "string",
-      "description": "Snapshot of platform capability at connection time (for diagnostics)"
+      "type": "string"
     }
   },
   "required": [

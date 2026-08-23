@@ -54,6 +54,24 @@ export const PROVIDERS = {
       connectDescription: 'Choose what Simply Her can access from your Google Health account.',
     },
   },
+
+  apple_health: {
+    id: 'apple_health',
+    label: 'Apple Health',
+    shortLabel: 'Apple Health',
+    description: 'Use fitness and activity data stored in Apple Health.',
+    connectLabel: 'Connect Apple Health',
+    type: 'native_ios',
+    icon: 'apple',
+    color: 'rose',
+    requiresNativeLayer: true,
+    platformCapabilityKey: 'appleHealth',
+    supportedDirections: { read: true, write: true },
+    userFacingCopy: {
+      rationale: 'Simply Her uses the health and fitness information you choose to share so your activity, workouts, sleep, and other enabled fitness information can appear without entering it twice.',
+      connectDescription: 'Choose what Simply Her can access from your Apple Health data.',
+    },
+  },
 };
 
 // Future providers — not built, but the architecture supports them

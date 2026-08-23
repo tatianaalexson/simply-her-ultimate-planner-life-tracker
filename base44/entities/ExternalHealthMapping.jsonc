@@ -6,7 +6,8 @@
       "type": "string",
       "enum": [
         "health_connect",
-        "google_health"
+        "google_health",
+        "apple_health"
       ]
     },
     "data_type": {
@@ -18,24 +19,24 @@
       "description": "Provider's unique record identifier"
     },
     "external_updated_at": {
-      "type": "string",
-      "description": "When the provider last updated this external record"
+      "type": "string"
     },
     "source_app": {
       "type": "string",
-      "description": "Origin app where available (Fitbit, Pixel Watch, Samsung Health, etc.)"
+      "description": "Origin app where available (Apple Health, Fitbit, Pixel Watch, etc.)"
+    },
+    "source_device": {
+      "type": "string",
+      "description": "Originating device where available (iPhone, Apple Watch, etc.)"
     },
     "simply_her_entity": {
-      "type": "string",
-      "description": "Simply Her entity name the external record maps to (WorkoutSession, FitnessDaily, NutritionEntry, etc.)"
+      "type": "string"
     },
     "simply_her_record_id": {
-      "type": "string",
-      "description": "Simply Her record ID that corresponds to this external record"
+      "type": "string"
     },
     "sync_hash": {
-      "type": "string",
-      "description": "Deterministic hash for deduplication matching"
+      "type": "string"
     },
     "sync_direction": {
       "type": "string",
@@ -50,16 +51,14 @@
     },
     "is_reconciled": {
       "type": "boolean",
-      "default": false,
-      "description": "Whether this record has been reconciled against other providers"
+      "default": false
     },
     "reconciled_with": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "default": [],
-      "description": "Other ExternalHealthMapping IDs this record was reconciled with"
+      "default": []
     }
   },
   "required": [

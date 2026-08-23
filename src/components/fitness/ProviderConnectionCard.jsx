@@ -3,13 +3,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Smartphone, HeartPulse, RefreshCw, CheckCircle2, AlertCircle,
-  Clock, Shield, XCircle
+  Clock, Shield, XCircle, Apple
 } from 'lucide-react';
 import { getConnectionState } from '@/lib/healthSync/providerRegistry';
 
 const ICONS = {
   smartphone: Smartphone,
   'heart-pulse': HeartPulse,
+  apple: Apple,
 };
 
 const COLOR_MAP = {

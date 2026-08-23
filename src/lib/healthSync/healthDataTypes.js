@@ -24,45 +24,45 @@ export const HEALTH_DATA_CATEGORIES = [
 // the provider API's documented capabilities for architecture planning.
 export const HEALTH_DATA_TYPES = [
   // --- Activity ---
-  { id: 'steps', label: 'Steps', category: 'activity', providers: { health_connect: true, google_health: true }, directions: ['read', 'write'], sh_entity: 'FitnessDaily', sh_field: 'steps' },
-  { id: 'active_minutes', label: 'Active Minutes', category: 'activity', providers: { health_connect: true, google_health: true }, directions: ['read'], sh_entity: 'FitnessDaily', sh_field: 'active' },
-  { id: 'distance', label: 'Distance', category: 'activity', providers: { health_connect: true, google_health: true }, directions: ['read', 'write'], sh_entity: 'FitnessDaily', sh_field: 'distance' },
-  { id: 'floors', label: 'Floors Climbed', category: 'activity', providers: { health_connect: true, google_health: true }, directions: ['read'] },
-  { id: 'elevation', label: 'Elevation Gain', category: 'activity', providers: { health_connect: true, google_health: true }, directions: ['read'] },
-  { id: 'wheelchair_pushes', label: 'Wheelchair Pushes', category: 'activity', providers: { health_connect: true, google_health: true }, directions: ['read'], sh_entity: 'FitnessDaily', accessibility_priority: true },
-  { id: 'active_energy', label: 'Active Energy', category: 'activity', providers: { health_connect: true, google_health: true }, directions: ['read'], sh_entity: 'FitnessDaily', sh_field: 'energy' },
-  { id: 'total_calories', label: 'Total Calories Burned', category: 'activity', providers: { health_connect: true, google_health: true }, directions: ['read'] },
+  { id: 'steps', label: 'Steps', category: 'activity', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read', 'write'], sh_entity: 'FitnessDaily', sh_field: 'steps' },
+  { id: 'active_minutes', label: 'Active Minutes', category: 'activity', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'], sh_entity: 'FitnessDaily', sh_field: 'active' },
+  { id: 'distance', label: 'Distance', category: 'activity', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read', 'write'], sh_entity: 'FitnessDaily', sh_field: 'distance' },
+  { id: 'floors', label: 'Floors Climbed', category: 'activity', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'] },
+  { id: 'elevation', label: 'Elevation Gain', category: 'activity', providers: { health_connect: true, google_health: true, apple_health: false }, directions: ['read'] },
+  { id: 'wheelchair_pushes', label: 'Wheelchair Pushes', category: 'activity', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'], sh_entity: 'FitnessDaily', accessibility_priority: true },
+  { id: 'active_energy', label: 'Active Energy', category: 'activity', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'], sh_entity: 'FitnessDaily', sh_field: 'energy' },
+  { id: 'total_calories', label: 'Total Calories Burned', category: 'activity', providers: { health_connect: true, google_health: true, apple_health: false }, directions: ['read'] },
 
   // --- Workouts ---
-  { id: 'exercise_sessions', label: 'Exercise Sessions', category: 'workouts', providers: { health_connect: true, google_health: true }, directions: ['read', 'write'], sh_entity: 'WorkoutSession' },
-  { id: 'planned_exercise', label: 'Planned Exercise', category: 'workouts', providers: { health_connect: true, google_health: false }, directions: ['read', 'write'], sh_entity: 'WorkoutSession' },
+  { id: 'exercise_sessions', label: 'Exercise Sessions', category: 'workouts', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read', 'write'], sh_entity: 'WorkoutSession' },
+  { id: 'planned_exercise', label: 'Planned Exercise', category: 'workouts', providers: { health_connect: true, google_health: false, apple_health: false }, directions: ['read', 'write'], sh_entity: 'WorkoutSession' },
 
   // --- Heart ---
-  { id: 'heart_rate', label: 'Heart Rate', category: 'heart', providers: { health_connect: true, google_health: true }, directions: ['read'], high_frequency: true },
-  { id: 'resting_hr', label: 'Resting Heart Rate', category: 'heart', providers: { health_connect: true, google_health: true }, directions: ['read'] },
-  { id: 'hrv', label: 'Heart Rate Variability', category: 'heart', providers: { health_connect: true, google_health: true }, directions: ['read'] },
-  { id: 'hr_zones', label: 'Heart Rate Zones', category: 'heart', providers: { health_connect: false, google_health: true }, directions: ['read'] },
+  { id: 'heart_rate', label: 'Heart Rate', category: 'heart', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'], high_frequency: true },
+  { id: 'resting_hr', label: 'Resting Heart Rate', category: 'heart', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'] },
+  { id: 'hrv', label: 'Heart Rate Variability', category: 'heart', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'] },
+  { id: 'hr_zones', label: 'Heart Rate Zones', category: 'heart', providers: { health_connect: false, google_health: true, apple_health: false }, directions: ['read'] },
 
   // --- Recovery ---
-  { id: 'sleep', label: 'Sleep', category: 'recovery', providers: { health_connect: true, google_health: true }, directions: ['read', 'write'], sh_entity: 'FitnessDaily', sh_field: 'sleep' },
-  { id: 'sleep_stages', label: 'Sleep Stages', category: 'recovery', providers: { health_connect: true, google_health: true }, directions: ['read'] },
+  { id: 'sleep', label: 'Sleep', category: 'recovery', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read', 'write'], sh_entity: 'FitnessDaily', sh_field: 'sleep' },
+  { id: 'sleep_stages', label: 'Sleep Stages', category: 'recovery', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'] },
 
   // --- Body ---
-  { id: 'weight', label: 'Weight', category: 'body', providers: { health_connect: true, google_health: true }, directions: ['read', 'write'], sensitive: true },
-  { id: 'body_fat', label: 'Body Fat', category: 'body', providers: { health_connect: true, google_health: true }, directions: ['read'], sensitive: true },
-  { id: 'lean_body_mass', label: 'Lean Body Mass', category: 'body', providers: { health_connect: true, google_health: true }, directions: ['read'], sensitive: true },
+  { id: 'weight', label: 'Weight', category: 'body', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read', 'write'], sensitive: true },
+  { id: 'body_fat', label: 'Body Fat', category: 'body', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'], sensitive: true },
+  { id: 'lean_body_mass', label: 'Lean Body Mass', category: 'body', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'], sensitive: true },
 
   // --- Performance ---
-  { id: 'vo2_max', label: 'VO₂ Max', category: 'performance', providers: { health_connect: true, google_health: true }, directions: ['read'] },
-  { id: 'speed', label: 'Speed', category: 'performance', providers: { health_connect: true, google_health: true }, directions: ['read'], high_frequency: true },
-  { id: 'cadence', label: 'Cadence', category: 'performance', providers: { health_connect: true, google_health: true }, directions: ['read'], high_frequency: true },
-  { id: 'power', label: 'Power', category: 'performance', providers: { health_connect: true, google_health: false }, directions: ['read'], high_frequency: true },
+  { id: 'vo2_max', label: 'VO₂ Max', category: 'performance', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'] },
+  { id: 'speed', label: 'Speed', category: 'performance', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'], high_frequency: true },
+  { id: 'cadence', label: 'Cadence', category: 'performance', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read'], high_frequency: true },
+  { id: 'power', label: 'Power', category: 'performance', providers: { health_connect: true, google_health: false, apple_health: true }, directions: ['read'], high_frequency: true },
 
   // --- Hydration ---
-  { id: 'hydration', label: 'Water / Hydration', category: 'hydration', providers: { health_connect: true, google_health: true }, directions: ['read', 'write'], sh_entity: 'FitnessDaily', sh_field: 'water' },
+  { id: 'hydration', label: 'Water / Hydration', category: 'hydration', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read', 'write'], sh_entity: 'FitnessDaily', sh_field: 'water' },
 
   // --- Nutrition ---
-  { id: 'nutrition', label: 'Nutrition', category: 'nutrition', providers: { health_connect: true, google_health: true }, directions: ['read', 'write'], sh_entity: 'NutritionEntry' },
+  { id: 'nutrition', label: 'Nutrition', category: 'nutrition', providers: { health_connect: true, google_health: true, apple_health: true }, directions: ['read', 'write'], sh_entity: 'NutritionEntry' },
 ];
 
 // Helper functions
@@ -90,6 +90,7 @@ export const SOURCE_LABELS = {
   simply_her: 'Simply Her',
   health_connect: 'Health Connect',
   google_health: 'Google Health',
+  apple_health: 'Apple Health',
   device: 'Device',
   legacy: 'Imported (legacy)',
 };

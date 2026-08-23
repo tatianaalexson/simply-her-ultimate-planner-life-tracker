@@ -6,7 +6,8 @@
       "type": "string",
       "enum": [
         "health_connect",
-        "google_health"
+        "google_health",
+        "apple_health"
       ]
     },
     "sync_type": {
@@ -68,8 +69,7 @@
       "type": "string"
     },
     "error_details": {
-      "type": "string",
-      "description": "Technical error detail for diagnostics (not shown in normal UI)"
+      "type": "string"
     },
     "duration_ms": {
       "type": "number",

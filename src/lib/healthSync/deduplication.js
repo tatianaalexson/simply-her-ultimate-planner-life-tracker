@@ -2,7 +2,8 @@
 // DEDUPLICATION / RECONCILIATION
 // Prevents double-counting when the same physical event
 // appears through multiple providers (e.g. Pixel Watch →
-// Google Health API AND Health Connect).
+// Google Health API AND Health Connect, or iPhone Fitbit
+// user with both Apple Health AND Google Health).
 //
 // This module contains the matching strategy and reconciliation
 // logic. It is designed to be provider-agnostic.
@@ -15,43 +16,46 @@ import { base44 } from '@/api/base44Client';
  * When the same record exists from multiple providers, the
  * higher-priority provider's value is authoritative.
  *
- * This is intentionally nuanced — different data types have
- * different authoritative sources:
- * - Cloud-account records (Fitbit/Pixel Watch cloud) → Google Health API authoritative
- * - On-device aggregated metrics → Health Connect authoritative
- * - Manual entries → user is authoritative
+ * Key principle (Part XL): Do NOT assume Apple Health is the
+ * only authority. An iPhone Fitbit user could connect Apple Health
+ * AND Google Health — the same workout might appear in both.
+ *
+ * Priority logic:
+ * - Cloud-sourced account records: Apple Health = Google Health = 3 (peers)
+ * - On-device aggregated daily metrics: Apple Health = Health Connect = 3
+ * - Manual entries: user is authoritative (priority 1, preserved)
  */
 export const SOURCE_PRIORITY = {
-  // Cloud-sourced account records: Google Health API is authoritative
-  exercise_sessions: { google_health: 3, health_connect: 2, manual: 1 },
-  sleep: { google_health: 3, health_connect: 2, manual: 1 },
-  sleep_stages: { google_health: 3, health_connect: 2 },
-  weight: { google_health: 3, health_connect: 2, manual: 1 },
-  heart_rate: { google_health: 3, health_connect: 2 },
-  resting_hr: { google_health: 3, health_connect: 2 },
-  hrv: { google_health: 3, health_connect: 2 },
+  // Cloud/account-sourced records: Apple Health & Google Health are peers
+  exercise_sessions: { apple_health: 3, google_health: 3, health_connect: 2, manual: 1 },
+  sleep: { apple_health: 3, google_health: 3, health_connect: 2, manual: 1 },
+  sleep_stages: { apple_health: 3, google_health: 3, health_connect: 2 },
+  weight: { apple_health: 3, google_health: 3, health_connect: 2, manual: 1 },
+  heart_rate: { apple_health: 3, google_health: 3, health_connect: 2 },
+  resting_hr: { apple_health: 3, google_health: 3, health_connect: 2 },
+  hrv: { apple_health: 3, google_health: 3, health_connect: 2 },
   hr_zones: { google_health: 3 },
 
-  // On-device aggregated daily metrics: Health Connect is authoritative
-  steps: { health_connect: 3, google_health: 2, manual: 1 },
-  active_minutes: { health_connect: 3, google_health: 2, manual: 1 },
-  distance: { health_connect: 3, google_health: 2, manual: 1 },
-  floors: { health_connect: 3, google_health: 2 },
+  // On-device aggregated daily metrics: native platform is authoritative
+  steps: { apple_health: 3, health_connect: 3, google_health: 2, manual: 1 },
+  active_minutes: { apple_health: 3, health_connect: 3, google_health: 2, manual: 1 },
+  distance: { apple_health: 3, health_connect: 3, google_health: 2, manual: 1 },
+  floors: { apple_health: 3, health_connect: 3, google_health: 2 },
   elevation: { health_connect: 3, google_health: 2 },
-  wheelchair_pushes: { health_connect: 3, google_health: 2, manual: 1 },
-  hydration: { health_connect: 3, google_health: 2, manual: 1 },
-  active_energy: { health_connect: 3, google_health: 2 },
+  wheelchair_pushes: { apple_health: 3, health_connect: 3, google_health: 2, manual: 1 },
+  hydration: { apple_health: 3, health_connect: 3, google_health: 2, manual: 1 },
+  active_energy: { apple_health: 3, health_connect: 3, google_health: 2 },
   total_calories: { health_connect: 3, google_health: 2 },
 
-  // Body metrics: cloud sync preferred
-  body_fat: { google_health: 3, health_connect: 2 },
-  lean_body_mass: { google_health: 3, health_connect: 2 },
+  // Body metrics: cloud/native preferred
+  body_fat: { apple_health: 3, google_health: 3, health_connect: 2 },
+  lean_body_mass: { apple_health: 3, google_health: 3, health_connect: 2 },
 
   // Performance: whichever provider supplies it
-  vo2_max: { google_health: 3, health_connect: 2 },
-  speed: { google_health: 3, health_connect: 2 },
-  cadence: { google_health: 3, health_connect: 2 },
-  power: { health_connect: 3 },
+  vo2_max: { apple_health: 3, google_health: 3, health_connect: 2 },
+  speed: { apple_health: 3, google_health: 3, health_connect: 2 },
+  cadence: { apple_health: 3, google_health: 3, health_connect: 2 },
+  power: { apple_health: 3, health_connect: 3 },
 };
 
 /**
@@ -173,6 +177,8 @@ export function reconcileDailyValue(dataType, sources) {
  * the "8,000 + 8,000 = 16,000" step duplication problem.
  *
  * This does NOT sum overlapping streams blindly.
+ * Each provider's daily total is already aggregated — take the max per
+ * provider, then pick the authoritative provider's value.
  */
 export function computeSafeDailyTotal(dataType, sourceRecords) {
   if (!sourceRecords || sourceRecords.length === 0) return 0;
