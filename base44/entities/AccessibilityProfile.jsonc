@@ -1,0 +1,150 @@
+{
+  "name": "AccessibilityProfile",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "default": "accessibility"
+    },
+    "mobility_preferences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "movement_positions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "adaptations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "cognitive_support": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "fluctuating_capacity": {
+      "type": "boolean",
+      "default": false
+    },
+    "capacity_levels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ]
+      },
+      "default": [
+        {
+          "id": "full",
+          "label": "Full",
+          "color": "green"
+        },
+        {
+          "id": "reduced",
+          "label": "Reduced",
+          "color": "amber"
+        },
+        {
+          "id": "gentle",
+          "label": "Gentle",
+          "color": "blue"
+        },
+        {
+          "id": "rest",
+          "label": "Rest",
+          "color": "slate"
+        }
+      ]
+    },
+    "energy_budget_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "energy_budget_terminology": {
+      "type": "string",
+      "default": "Energy Budget"
+    },
+    "energy_budget_daily": {
+      "type": "number",
+      "default": 0
+    },
+    "activity_tolerance_standing": {
+      "type": "number",
+      "default": 0
+    },
+    "activity_tolerance_walking": {
+      "type": "number",
+      "default": 0
+    },
+    "activity_tolerance_seated": {
+      "type": "number",
+      "default": 0
+    },
+    "activity_tolerance_custom": {
+      "type": "string"
+    },
+    "pacing_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "pacing_activity_min": {
+      "type": "number",
+      "default": 5
+    },
+    "pacing_rest_min": {
+      "type": "number",
+      "default": 10
+    },
+    "delayed_checkin": {
+      "type": "boolean",
+      "default": false
+    },
+    "reduce_motion": {
+      "type": "boolean",
+      "default": false
+    },
+    "larger_targets": {
+      "type": "boolean",
+      "default": false
+    },
+    "simplified_workout": {
+      "type": "boolean",
+      "default": false
+    },
+    "hide_metrics": {
+      "type": "boolean",
+      "default": false
+    },
+    "custom_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind"
+  ]
+}

@@ -6,6 +6,75 @@
       "type": "string",
       "default": "fitness"
     },
+    "detail_level": {
+      "type": "string",
+      "enum": [
+        "simple",
+        "balanced",
+        "advanced"
+      ],
+      "default": "balanced"
+    },
+    "fitness_focuses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "general"
+      ]
+    },
+    "unit_system": {
+      "type": "string",
+      "enum": [
+        "metric",
+        "imperial"
+      ],
+      "default": "metric"
+    },
+    "weight_unit": {
+      "type": "string",
+      "enum": [
+        "kg",
+        "lb"
+      ],
+      "default": "kg"
+    },
+    "distance_unit": {
+      "type": "string",
+      "enum": [
+        "km",
+        "mi"
+      ],
+      "default": "km"
+    },
+    "water_unit": {
+      "type": "string",
+      "default": "cups"
+    },
+    "default_location": {
+      "type": "string",
+      "default": "home"
+    },
+    "default_rest_seconds": {
+      "type": "number",
+      "default": 60
+    },
+    "experience_levels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          }
+        }
+      },
+      "default": []
+    },
     "steps_goal": {
       "type": "number",
       "default": 8000

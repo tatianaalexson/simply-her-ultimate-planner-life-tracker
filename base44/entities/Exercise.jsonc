@@ -1,0 +1,125 @@
+{
+  "name": "Exercise",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "default": "strength"
+    },
+    "movement_pattern": {
+      "type": "string",
+      "default": "custom"
+    },
+    "measurement_mode": {
+      "type": "string",
+      "default": "reps"
+    },
+    "muscle_groups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "body_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "equipment": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "positions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "impact_level": {
+      "type": "string",
+      "default": "normal"
+    },
+    "laterality": {
+      "type": "string",
+      "enum": [
+        "bilateral",
+        "unilateral",
+        "alternating"
+      ],
+      "default": "bilateral"
+    },
+    "instructions": {
+      "type": "string"
+    },
+    "cues": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "favourite": {
+      "type": "boolean",
+      "default": false
+    },
+    "avoid": {
+      "type": "boolean",
+      "default": false
+    },
+    "avoid_note": {
+      "type": "string"
+    },
+    "custom": {
+      "type": "boolean",
+      "default": true
+    },
+    "adaptations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "default": []
+    },
+    "media_url": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "user",
+        "predefined"
+      ],
+      "default": "user"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

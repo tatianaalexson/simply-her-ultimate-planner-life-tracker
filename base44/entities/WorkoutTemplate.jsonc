@@ -1,0 +1,221 @@
+{
+  "name": "WorkoutTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "default": "strength"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "estimated_duration": {
+      "type": "number",
+      "default": 0
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "gentle",
+        "moderate",
+        "challenging",
+        "custom"
+      ],
+      "default": "moderate"
+    },
+    "capacity_requirement": {
+      "type": "string",
+      "default": "full"
+    },
+    "location": {
+      "type": "string"
+    },
+    "equipment": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "warmup",
+              "activation",
+              "main",
+              "superset",
+              "circuit",
+              "interval",
+              "amrap",
+              "emom",
+              "tabata",
+              "finisher",
+              "mobility",
+              "cooldown",
+              "custom"
+            ],
+            "default": "main"
+          },
+          "exercises": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "exercise_id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "measurement_mode": {
+                  "type": "string"
+                },
+                "target_sets": {
+                  "type": "number",
+                  "default": 0
+                },
+                "target_reps": {
+                  "type": "string"
+                },
+                "target_weight": {
+                  "type": "number",
+                  "default": 0
+                },
+                "target_duration": {
+                  "type": "number",
+                  "default": 0
+                },
+                "target_distance": {
+                  "type": "number",
+                  "default": 0
+                },
+                "rest_seconds": {
+                  "type": "number",
+                  "default": 0
+                },
+                "rpe": {
+                  "type": "number",
+                  "default": 0
+                },
+                "rir": {
+                  "type": "number",
+                  "default": 0
+                },
+                "tempo": {
+                  "type": "string"
+                },
+                "side": {
+                  "type": "string",
+                  "enum": [
+                    "both",
+                    "left",
+                    "right",
+                    "alternating"
+                  ],
+                  "default": "both"
+                },
+                "set_type": {
+                  "type": "string",
+                  "default": "working"
+                },
+                "notes": {
+                  "type": "string"
+                }
+              }
+            },
+            "default": []
+          },
+          "rounds": {
+            "type": "number",
+            "default": 1
+          },
+          "rest_seconds": {
+            "type": "number",
+            "default": 0
+          },
+          "duration_seconds": {
+            "type": "number",
+            "default": 0
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "default": []
+    },
+    "notes": {
+      "type": "string"
+    },
+    "favourite": {
+      "type": "boolean",
+      "default": false
+    },
+    "archived": {
+      "type": "boolean",
+      "default": false
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "capacity_level": {
+            "type": "string"
+          },
+          "template_id": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "number",
+            "default": 0
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "capacity_level"
+        ]
+      },
+      "default": []
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "user",
+        "program",
+        "converted"
+      ],
+      "default": "user"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

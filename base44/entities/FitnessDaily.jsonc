@@ -29,6 +29,41 @@
     "rest_day": {
       "type": "boolean",
       "default": false
+    },
+    "soreness": {
+      "type": "number",
+      "default": 0
+    },
+    "motivation": {
+      "type": "number",
+      "default": 0
+    },
+    "capacity_today": {
+      "type": "string"
+    },
+    "capacity_notes": {
+      "type": "string"
+    },
+    "post_activity_response": {
+      "type": "string"
+    },
+    "distance": {
+      "type": "number",
+      "default": 0
+    },
+    "sleep_quality": {
+      "type": "number",
+      "default": 0
+    },
+    "bedtime": {
+      "type": "string"
+    },
+    "wake_time": {
+      "type": "string"
+    },
+    "energy_budget_used": {
+      "type": "number",
+      "default": 0
     }
   },
   "required": [

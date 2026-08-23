@@ -32,17 +32,86 @@ const v = (today = false, planner = false, quickAdd = false, notifications = fal
 });
 
 export const FEATURES = [
-  // Fitness
-  { id: 'fit.steps', group: 'fitness', label: 'Steps', vis: v(true) },
-  { id: 'fit.water', group: 'fitness', label: 'Water', vis: v(true) },
-  { id: 'fit.active', group: 'fitness', label: 'Active Minutes' },
-  { id: 'fit.sleep', group: 'fitness', label: 'Sleep', vis: v(true) },
-  { id: 'fit.workouts', group: 'fitness', label: 'Workouts' },
-  { id: 'fit.calories', group: 'fitness', label: 'Calories' },
-  { id: 'fit.macros', group: 'fitness', label: 'Macros' },
+  // Fitness — Home
+  { id: 'fit.home', group: 'fitness', label: 'Fitness Home', defaultEnabled: true, vis: v(true) },
+
+  // Fitness — Workouts
+  { id: 'fit.workouts', group: 'fitness', label: 'Workouts', defaultEnabled: true, vis: v(false, false, true, false, true) },
+  { id: 'fit.exerciseLibrary', group: 'fitness', label: 'Exercise Library', vis: v(false, false, true, false, true) },
+  { id: 'fit.workoutBuilder', group: 'fitness', label: 'Workout Builder' },
+  { id: 'fit.templates', group: 'fitness', label: 'Workout Templates', vis: v(false, false, true, false, true) },
+  { id: 'fit.programs', group: 'fitness', label: 'Programs' },
+  { id: 'fit.history', group: 'fitness', label: 'Workout History', vis: v(false, false, true, false, true) },
+  { id: 'fit.activeWorkout', group: 'fitness', label: 'Active Workout Mode' },
+  { id: 'fit.timers', group: 'fitness', label: 'Timers' },
+
+  // Fitness — Advanced Training
+  { id: 'fit.advancedMetrics', group: 'fitness', label: 'Advanced Training Metrics', defaultEnabled: false },
+  { id: 'fit.rpe', group: 'fitness', label: 'RPE', defaultEnabled: false },
+  { id: 'fit.rir', group: 'fitness', label: 'RIR', defaultEnabled: false },
+  { id: 'fit.tempo', group: 'fitness', label: 'Tempo', defaultEnabled: false },
+  { id: 'fit.volume', group: 'fitness', label: 'Training Volume', defaultEnabled: false },
+  { id: 'fit.personalRecords', group: 'fitness', label: 'Personal Records', defaultEnabled: false },
+
+  // Fitness — Movement Types
+  { id: 'fit.strength', group: 'fitness', label: 'Strength Training', defaultEnabled: true },
+  { id: 'fit.walking', group: 'fitness', label: 'Walking', defaultEnabled: true },
+  { id: 'fit.running', group: 'fitness', label: 'Running' },
+  { id: 'fit.cycling', group: 'fitness', label: 'Cycling' },
+  { id: 'fit.swimming', group: 'fitness', label: 'Swimming' },
+  { id: 'fit.hiking', group: 'fitness', label: 'Hiking' },
+  { id: 'fit.rowing', group: 'fitness', label: 'Rowing' },
+  { id: 'fit.pilates', group: 'fitness', label: 'Pilates', defaultEnabled: true },
+  { id: 'fit.barre', group: 'fitness', label: 'Barre' },
+  { id: 'fit.yoga', group: 'fitness', label: 'Yoga' },
+  { id: 'fit.mobility', group: 'fitness', label: 'Mobility' },
+  { id: 'fit.stretching', group: 'fitness', label: 'Stretching' },
+  { id: 'fit.dance', group: 'fitness', label: 'Dance' },
+  { id: 'fit.hiit', group: 'fitness', label: 'HIIT' },
+  { id: 'fit.rehab', group: 'fitness', label: 'Rehab / PT Routines' },
+  { id: 'fit.wheelchair', group: 'fitness', label: 'Wheelchair Movement' },
+  { id: 'fit.customMovement', group: 'fitness', label: 'Custom Movement' },
+
+  // Fitness — Activity
+  { id: 'fit.steps', group: 'fitness', label: 'Steps', defaultEnabled: true, vis: v(true) },
+  { id: 'fit.activeMinutes', group: 'fitness', label: 'Active Minutes', legacyKey: 'fit.active' },
+  { id: 'fit.active', group: 'fitness', label: 'Active Minutes (legacy)', defaultEnabled: true },
+  { id: 'fit.distance', group: 'fitness', label: 'Distance' },
+  { id: 'fit.activityCalories', group: 'fitness', label: 'Activity Calories' },
+  { id: 'fit.water', group: 'fitness', label: 'Water', defaultEnabled: true, vis: v(true) },
+
+  // Fitness — Recovery
+  { id: 'fit.recovery', group: 'fitness', label: 'Recovery', defaultEnabled: true, vis: v(true) },
+  { id: 'fit.sleep', group: 'fitness', label: 'Sleep', defaultEnabled: true, vis: v(true) },
+  { id: 'fit.energy', group: 'fitness', label: 'Energy' },
+  { id: 'fit.soreness', group: 'fitness', label: 'Soreness' },
+  { id: 'fit.restDays', group: 'fitness', label: 'Rest Days', vis: v(true) },
+  { id: 'fit.capacity', group: 'fitness', label: 'Capacity / Pacing' },
+  { id: 'fit.pacing', group: 'fitness', label: 'Pacing' },
+
+  // Fitness — Progress
+  { id: 'fit.progress', group: 'fitness', label: 'Progress', vis: v(false, false, true, false, true) },
+  { id: 'fit.weight', group: 'fitness', label: 'Weight', defaultEnabled: false, sensitive: true },
+  { id: 'fit.measurements', group: 'fitness', label: 'Body Measurements', defaultEnabled: false, sensitive: true },
+  { id: 'fit.progressPhotos', group: 'fitness', label: 'Progress Photos', defaultEnabled: false, sensitive: true },
+  { id: 'fit.milestones', group: 'fitness', label: 'Qualitative Milestones' },
+
+  // Fitness — Nutrition (shared)
+  { id: 'fit.nutrition', group: 'fitness', label: 'Nutrition (Fitness View)', defaultEnabled: false },
+  { id: 'fit.calories', group: 'fitness', label: 'Calories', defaultEnabled: false },
+  { id: 'fit.protein', group: 'fitness', label: 'Protein', defaultEnabled: false },
+  { id: 'fit.macros', group: 'fitness', label: 'Macros', defaultEnabled: false },
+
+  // Fitness — Accessibility
+  { id: 'fit.adaptations', group: 'fitness', label: 'Adaptations & Accessibility' },
+  { id: 'fit.simplifiedWorkout', group: 'fitness', label: 'Simplified Workout Mode' },
+  { id: 'fit.fluctuatingCapacity', group: 'fitness', label: 'Fluctuating Capacity' },
+
+  // Fitness — Other
+  { id: 'fit.classes', group: 'fitness', label: 'Fitness Classes' },
+  { id: 'fit.gear', group: 'fitness', label: 'Fitness Gear' },
   { id: 'fit.goals', group: 'fitness', label: 'Goals & Targets' },
-  { id: 'fit.recovery', group: 'fitness', label: 'Recovery' },
-  { id: 'fit.wearable', group: 'fitness', label: 'Wearable Sync' },
+  { id: 'fit.wearable', group: 'fitness', label: 'Wearables (coming soon)', defaultEnabled: false },
 
   // Kitchen
   { id: 'kit.home', group: 'kitchen', label: 'Kitchen Home', vis: v(true) },

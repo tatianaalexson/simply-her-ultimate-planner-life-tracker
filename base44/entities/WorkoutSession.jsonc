@@ -1,0 +1,177 @@
+{
+  "name": "WorkoutSession",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "start_time": {
+      "type": "string"
+    },
+    "end_time": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "number",
+      "default": 0
+    },
+    "template_id": {
+      "type": "string"
+    },
+    "program_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "default": "strength"
+    },
+    "location": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "active",
+        "complete",
+        "partial",
+        "skipped",
+        "rescheduled",
+        "cancelled"
+      ],
+      "default": "planned"
+    },
+    "exercises": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "exercise_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "measurement_mode": {
+            "type": "string"
+          },
+          "sets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "set_number": {
+                  "type": "number",
+                  "default": 1
+                },
+                "reps": {
+                  "type": "string"
+                },
+                "weight": {
+                  "type": "number",
+                  "default": 0
+                },
+                "resistance": {
+                  "type": "string"
+                },
+                "duration": {
+                  "type": "number",
+                  "default": 0
+                },
+                "distance": {
+                  "type": "number",
+                  "default": 0
+                },
+                "rpe": {
+                  "type": "number",
+                  "default": 0
+                },
+                "rir": {
+                  "type": "number",
+                  "default": 0
+                },
+                "tempo": {
+                  "type": "string"
+                },
+                "side": {
+                  "type": "string",
+                  "default": "both"
+                },
+                "set_type": {
+                  "type": "string",
+                  "default": "working"
+                },
+                "completed": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "notes": {
+                  "type": "string"
+                }
+              }
+            },
+            "default": []
+          },
+          "notes": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number",
+            "default": 0
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "default": []
+    },
+    "notes": {
+      "type": "string"
+    },
+    "effort": {
+      "type": "number",
+      "default": 0
+    },
+    "energy_before": {
+      "type": "number",
+      "default": 0
+    },
+    "energy_after": {
+      "type": "number",
+      "default": 0
+    },
+    "post_activity_response": {
+      "type": "string"
+    },
+    "distance": {
+      "type": "number",
+      "default": 0
+    },
+    "distance_unit": {
+      "type": "string",
+      "default": "km"
+    },
+    "calories_burned": {
+      "type": "number",
+      "default": 0
+    },
+    "capacity_version": {
+      "type": "string"
+    },
+    "adaptation_notes": {
+      "type": "string"
+    },
+    "legacy_workout_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "date"
+  ]
+}
