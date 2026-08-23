@@ -9,6 +9,7 @@ import RecoveryView from '@/components/fitness/RecoveryView';
 import ProgressView from '@/components/fitness/ProgressView';
 import ExerciseLibraryView from '@/components/fitness/ExerciseLibraryView';
 import AccessibilitySettings from '@/components/fitness/AccessibilitySettings';
+import ConnectedHealth from '@/components/fitness/ConnectedHealth';
 import CalorieMacroTracker from '@/components/health/CalorieMacroTracker';
 
 const NAV_ITEMS = [
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { id: 'exercises', label: 'Exercise Library', feature: 'fit.exerciseLibrary', secondary: true },
   { id: 'nutrition', label: 'Nutrition', feature: 'fit.nutrition', secondary: true },
   { id: 'accessibility', label: 'Accessibility & Capacity', secondary: true },
+  { id: 'connected-health', label: 'Connected Health', secondary: true },
 ];
 
 export default function FitnessStudio() {
@@ -56,6 +58,8 @@ export default function FitnessStudio() {
         return <CalorieMacroTracker />;
       case 'accessibility':
         return <AccessibilitySettings />;
+      case 'connected-health':
+        return <ConnectedHealth />;
       default:
         return <FitnessHome onNavigate={setView} />;
     }

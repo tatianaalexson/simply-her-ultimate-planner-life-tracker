@@ -109,7 +109,28 @@
     },
     "wearable": {
       "type": "boolean",
-      "default": false
+      "default": false,
+      "description": "Legacy field \u2014 retained for backward compatibility. Connected Health provider status now lives in HealthConnection entity."
+    },
+    "auto_sync": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, connected health providers sync automatically using legitimate provider/background mechanisms where supported."
+    },
+    "sync_on_app_open": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, refresh connected health data when Simply Her opens."
+    },
+    "auto_write_workouts": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, eligible Simply Her-created workouts are automatically shared with connected providers. OFF by default \u2014 user must explicitly enable."
+    },
+    "connected_health_onboarded": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has seen the Connected Health onboarding. Suppresses repeat banners."
     }
   },
   "required": [

@@ -1,0 +1,84 @@
+{
+  "name": "HealthSyncLog",
+  "type": "object",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "enum": [
+        "health_connect",
+        "google_health"
+      ]
+    },
+    "sync_type": {
+      "type": "string",
+      "enum": [
+        "incremental",
+        "backfill",
+        "webhook",
+        "manual",
+        "write_back"
+      ],
+      "default": "incremental"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "started",
+        "completed",
+        "partial",
+        "failed",
+        "skipped"
+      ],
+      "default": "started"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "data_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "records_created": {
+      "type": "number",
+      "default": 0
+    },
+    "records_updated": {
+      "type": "number",
+      "default": 0
+    },
+    "records_skipped": {
+      "type": "number",
+      "default": 0
+    },
+    "records_deduped": {
+      "type": "number",
+      "default": 0
+    },
+    "records_exported": {
+      "type": "number",
+      "default": 0
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "error_details": {
+      "type": "string",
+      "description": "Technical error detail for diagnostics (not shown in normal UI)"
+    },
+    "duration_ms": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "provider",
+    "sync_type",
+    "started_at"
+  ]
+}

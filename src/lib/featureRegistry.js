@@ -111,7 +111,11 @@ export const FEATURES = [
   { id: 'fit.classes', group: 'fitness', label: 'Fitness Classes' },
   { id: 'fit.gear', group: 'fitness', label: 'Fitness Gear' },
   { id: 'fit.goals', group: 'fitness', label: 'Goals & Targets' },
-  { id: 'fit.wearable', group: 'fitness', label: 'Wearables (coming soon)', defaultEnabled: false },
+  // Fitness — Connected Health (replaces legacy 'fit.wearable' fake toggle)
+  { id: 'fit.connectedHealth', group: 'fitness', label: 'Connected Health', defaultEnabled: true, vis: v(false, false, false, false, false) },
+  { id: 'fit.autoSync', group: 'fitness', label: 'Automatic Health Sync', defaultEnabled: false },
+  { id: 'fit.syncOnAppOpen', group: 'fitness', label: 'Sync on App Open', defaultEnabled: false },
+  { id: 'fit.autoWriteWorkouts', group: 'fitness', label: 'Auto-Share Workouts', defaultEnabled: false },
 
   // Kitchen
   { id: 'kit.home', group: 'kitchen', label: 'Kitchen Home', vis: v(true) },

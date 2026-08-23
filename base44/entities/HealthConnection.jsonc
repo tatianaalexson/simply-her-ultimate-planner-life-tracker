@@ -1,0 +1,119 @@
+{
+  "name": "HealthConnection",
+  "type": "object",
+  "properties": {
+    "provider": {
+      "type": "string",
+      "enum": [
+        "health_connect",
+        "google_health"
+      ],
+      "description": "The external health provider this connection represents"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "not_connected",
+        "connecting",
+        "connected",
+        "permission_needed",
+        "syncing",
+        "sync_failed",
+        "disconnected",
+        "unavailable"
+      ],
+      "default": "not_connected"
+    },
+    "provider_user_id": {
+      "type": "string",
+      "description": "External provider user identifier (never store raw OAuth tokens here)"
+    },
+    "provider_account_label": {
+      "type": "string",
+      "description": "Friendly label for the connected account (e.g. 'Fitbit via Google Health')"
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "OAuth scopes granted by the user"
+    },
+    "read_permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Health data type IDs the user authorized Simply Her to READ from this provider"
+    },
+    "write_permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Health data type IDs the user authorized Simply Her to WRITE to this provider"
+    },
+    "last_sync_at": {
+      "type": "string",
+      "description": "ISO timestamp of the last sync attempt"
+    },
+    "last_successful_sync_at": {
+      "type": "string",
+      "description": "ISO timestamp of the last successful sync"
+    },
+    "last_error": {
+      "type": "string",
+      "description": "User-friendly error message from last failed sync"
+    },
+    "sync_cursor": {
+      "type": "string",
+      "description": "Provider-specific incremental sync cursor / change token"
+    },
+    "webhook_status": {
+      "type": "string",
+      "enum": [
+        "not_configured",
+        "active",
+        "failed",
+        "unsupported"
+      ],
+      "default": "not_configured"
+    },
+    "backfill_range": {
+      "type": "string",
+      "enum": [
+        "today",
+        "7d",
+        "30d",
+        "90d",
+        "1y",
+        "all"
+      ],
+      "default": "7d"
+    },
+    "backfill_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "auto_sync": {
+      "type": "boolean",
+      "default": false
+    },
+    "connection_created_at": {
+      "type": "string"
+    },
+    "connection_updated_at": {
+      "type": "string"
+    },
+    "platform_capability": {
+      "type": "string",
+      "description": "Snapshot of platform capability at connection time (for diagnostics)"
+    }
+  },
+  "required": [
+    "provider"
+  ]
+}

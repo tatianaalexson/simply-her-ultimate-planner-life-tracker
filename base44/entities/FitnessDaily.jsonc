@@ -10,21 +10,77 @@
       "type": "number",
       "default": 0
     },
+    "steps_source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "health_connect",
+        "google_health",
+        "device",
+        "simply_her"
+      ],
+      "default": "manual",
+      "description": "Provenance: where the steps value originated"
+    },
     "water": {
       "type": "number",
       "default": 0
+    },
+    "water_source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "health_connect",
+        "google_health",
+        "device",
+        "simply_her"
+      ],
+      "default": "manual"
     },
     "active": {
       "type": "number",
       "default": 0
     },
+    "active_source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "health_connect",
+        "google_health",
+        "device",
+        "simply_her"
+      ],
+      "default": "manual"
+    },
     "sleep": {
       "type": "number",
       "default": 0
     },
+    "sleep_source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "health_connect",
+        "google_health",
+        "device",
+        "simply_her"
+      ],
+      "default": "manual"
+    },
     "energy": {
       "type": "number",
       "default": 0
+    },
+    "energy_source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "health_connect",
+        "google_health",
+        "device",
+        "simply_her"
+      ],
+      "default": "manual"
     },
     "rest_day": {
       "type": "boolean",
@@ -51,6 +107,17 @@
       "type": "number",
       "default": 0
     },
+    "distance_source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "health_connect",
+        "google_health",
+        "device",
+        "simply_her"
+      ],
+      "default": "manual"
+    },
     "sleep_quality": {
       "type": "number",
       "default": 0
@@ -64,6 +131,10 @@
     "energy_budget_used": {
       "type": "number",
       "default": 0
+    },
+    "last_synced_at": {
+      "type": "string",
+      "description": "ISO timestamp of the last external provider sync that updated this daily record"
     }
   },
   "required": [
